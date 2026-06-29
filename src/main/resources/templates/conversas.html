@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="pt-br"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Minhas conversas - Leilão Games</title>
+
+    <link rel="stylesheet" href="/css/style.css">
+
+    <style>
+        .pagina-conversas {
+            width: min(900px, 92%);
+            margin: 50px auto;
+        }
+
+        .pagina-conversas h1 {
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .sem-conversas {
+            padding: 35px;
+            color: #333;
+            background: white;
+            border-radius: 15px;
+            text-align: center;
+        }
+
+        .lista-conversas {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .conversa-card {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            padding: 22px;
+            color: #222;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 7px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .conversa-card h2 {
+            margin-bottom: 8px;
+            color: #003b8f;
+        }
+
+        .conversa-card p {
+            margin-top: 6px;
+        }
+
+        .papel {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 5px 10px;
+            color: white;
+            background: #555;
+            border-radius: 20px;
+            font-size: 13px;
+        }
+
+        .abrir-chat {
+            padding: 12px 20px;
+            color: white;
+            background: #d90429;
+            border-radius: 9px;
+            text-decoration: none;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        .abrir-chat:hover {
+            background: #a90020;
+        }
+
+        .voltar {
+            display: inline-block;
+            margin-top: 25px;
+            color: white;
+            text-decoration: none;
+        }
+
+        @media (max-width: 650px) {
+            .conversa-card {
+                align-items: stretch;
+                flex-direction: column;
+            }
+
+            .abrir-chat {
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div th:replace="~{fragments/cabecalho-site :: cabecalho}">
+</div>
+
+<main class="pagina-conversas">
+
+    <h1>💬 Minhas conversas</h1>
+
+    <div class="sem-conversas"
+         th:if="${#lists.isEmpty(conversas)}">
+
+        <h2>Nenhuma conversa encontrada</h2>
+
+        <p>
+            Abra um produto e clique em
+            “Conversar com o vendedor”.
+        </p>
+
+    </div>
+
+    <div class="lista-conversas"
+         th:if="${!#lists.isEmpty(conversas)}">
+
+        <article class="conversa-card"
+                 th:each="conversa : ${conversas}">
+
+            <div>
+
+                <h2 th:text="${conversa.comprador.id == usuarioLogado.id
+                    ? conversa.vendedor.nome
+                    : conversa.comprador.nome}">
+                    Nome do usuário
+                </h2>
+
+                <p>
+                    Produto:
+
+                    <strong th:text="${conversa.produto.nome}">
+                        Nome do produto
+                    </strong>
+                </p>
+                
+                <div th:with="ultima=${ultimasMensagens[conversa.id]}">
+
+    <p th:if="${ultima != null}"
+       style="max-width:500px;
+              white-space:nowrap;
+              overflow:hidden;
+              text-overflow:ellipsis;
+              color:#555;">
+
+        <strong th:text="${ultima.remetente.id == usuarioLogado.id
+            ? 'Você:'
+            : ultima.remetente.nome + ':'}">
+            Usuário:
+        </strong>
+
+        <span th:text="${ultima.texto}">
+            Última mensagem
+        </span>
+
+    </p>
+
+    <p th:if="${ultima == null}"
+       style="color:#777;">
+        Nenhuma mensagem enviada.
+    </p>
+
+</div>
+
+                <span class="papel"
+                      th:text="${conversa.comprador.id == usuarioLogado.id
+                          ? 'Você é o comprador'
+                          : 'Você é o vendedor'}">
+                    Participação
+                </span>
+
+            </div>
+
+            <a class="abrir-chat"
+   th:href="@{/chat/{id}(id=${conversa.id})}">
+
+    <span th:if="${mensagensNaoLidas[conversa.id] > 0}"
+          th:text="${mensagensNaoLidas[conversa.id]}"
+          style="display:inline-block;
+                 min-width:24px;
+                 margin-right:7px;
+                 padding:3px 7px;
+                 color:#d90429;
+                 background:white;
+                 border-radius:20px;
+                 text-align:center;">
+        0
+    </span>
+
+    Abrir conversa
+</a>
+
+        </article>
+
+    </div>
+
+    <a href="/" class="voltar">
+        ← Voltar para o início
+    </a>
+
+</main>
+
+</body>
+</html>

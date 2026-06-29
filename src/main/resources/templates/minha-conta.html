@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="pt-br"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Minha Conta - Leilão Games</title>
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <link rel="stylesheet" href="/css/style.css">
+
+</head>
+
+<body>
+
+<div th:replace="~{fragments/cabecalho-site :: cabecalho}">
+</div>
+
+<main class="conta-pagina">
+
+    <h1 class="conta-titulo">
+        Minha conta
+    </h1>
+
+    <section class="perfil-conta">
+
+        <div class="perfil-avatar">
+            <i class="fa-solid fa-user"></i>
+        </div>
+
+        <div class="perfil-dados">
+
+            <h2 th:text="${usuario.nome}">
+                Usuário
+            </h2>
+
+            <p th:text="${usuario.email}">
+                email@exemplo.com
+            </p>
+
+            <div class="perfil-badges">
+
+                <span th:class="${usuario.tipo == 'ADMIN'
+                        ? 'ui-badge ui-badge-azul'
+                        : 'ui-badge ui-badge-cinza'}"
+                      th:text="${usuario.tipo}">
+                    CLIENTE
+                </span>
+
+                <span class="ui-badge ui-badge-amarelo">
+
+                    <i class="fa-solid fa-star"></i>
+
+                    <span th:text="${#numbers.formatDecimal(
+                        usuario.mediaAvaliacoes != null
+                            ? usuario.mediaAvaliacoes
+                            : 0,
+                        1,
+                        1
+                    )}">
+                        0,0
+                    </span>
+
+                    / 5
+
+                </span>
+
+            </div>
+
+        </div>
+
+    </section>
+
+    <section class="conta-resumo">
+
+        <article class="resumo-conta-card azul">
+
+            <i class="fa-solid fa-box"></i>
+
+            <strong th:text="${totalAnuncios}">0</strong>
+
+            <span>Anúncios</span>
+
+        </article>
+
+        <article class="resumo-conta-card vermelho">
+
+            <i class="fa-solid fa-gavel"></i>
+
+            <strong th:text="${totalLances}">0</strong>
+
+            <span>Lances</span>
+
+        </article>
+
+        <article class="resumo-conta-card rosa">
+
+            <i class="fa-solid fa-heart"></i>
+
+            <strong th:text="${totalFavoritos}">0</strong>
+
+            <span>Favoritos</span>
+
+        </article>
+
+        <article class="resumo-conta-card amarelo">
+
+            <i class="fa-solid fa-star"></i>
+
+            <strong th:text="${usuario.quantidadeAvaliacoes != null
+                ? usuario.quantidadeAvaliacoes
+                : 0}">
+                0
+            </strong>
+
+            <span>Avaliações</span>
+
+        </article>
+
+    </section>
+
+    <section class="produto-secao">
+
+        <h2>
+            <i class="fa-solid fa-bolt"></i>
+            Acessos rápidos
+        </h2>
+
+        <div class="menu-rapido-grid">
+
+            <a href="/anunciar" data-loading="true">
+                <i class="fa-solid fa-circle-plus"></i>
+                <span>Anunciar produto</span>
+            </a>
+
+            <a href="/meus-anuncios" data-loading="true">
+                <i class="fa-solid fa-boxes-stacked"></i>
+                <span>Meus anúncios</span>
+            </a>
+
+            <a href="/meus-lances" data-loading="true">
+                <i class="fa-solid fa-gavel"></i>
+                <span>Meus lances</span>
+            </a>
+
+            <a href="/favoritos" data-loading="true">
+                <i class="fa-solid fa-heart"></i>
+                <span>Meus favoritos</span>
+            </a>
+
+            <a href="/meus-leiloes-ganhos"
+               data-loading="true">
+                <i class="fa-solid fa-trophy"></i>
+                <span>Leilões ganhos</span>
+            </a>
+
+            <a href="/chat" data-loading="true">
+                <i class="fa-solid fa-comments"></i>
+                <span>Minhas conversas</span>
+            </a>
+
+        </div>
+
+        <form class="form-logout"
+              action="/logout"
+              method="post"
+              data-loading="true">
+
+            <button class="ui-botao ui-botao-perigo"
+                    type="submit">
+
+                <i class="fa-solid fa-right-from-bracket"></i>
+
+                Sair da conta
+
+            </button>
+
+        </form>
+
+    </section>
+
+</main>
+
+<footer>
+    © 2026 Leilão Games - Projeto TCC TADS
+</footer>
+
+</body>
+</html>

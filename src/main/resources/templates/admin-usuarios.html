@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="pt-br"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Gerenciar Usuários - Leilão Games</title>
+
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/admin.css">
+</head>
+
+<body>
+
+<div th:replace="~{fragments/cabecalho-admin :: cabecalho}">
+</div>
+
+<main class="admin-container">
+
+    <h1 class="admin-titulo">
+        Gerenciamento de Usuários
+    </h1>
+
+    <p class="admin-resumo">
+        Total:
+        <strong th:text="${#lists.size(usuarios)}">
+            0
+        </strong>
+    </p>
+
+    <section class="admin-card">
+
+        <div class="sem-registros"
+             th:if="${#lists.isEmpty(usuarios)}">
+
+            Nenhum usuário cadastrado.
+
+        </div>
+
+        <div class="tabela-wrapper"
+             th:if="${!#lists.isEmpty(usuarios)}">
+
+            <table class="tabela-admin">
+
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nome</th>
+                    <th>E-mail</th>
+                    <th>Tipo</th>
+                    <th>Avaliações</th>
+                    <th>Média</th>
+                    <th>Ação</th>
+                </tr>
+                </thead>
+
+                <tbody>
+
+                <tr th:each="usuario : ${usuarios}">
+
+                    <td th:text="${usuario.id}">
+                        1
+                    </td>
+
+                    <td th:text="${usuario.nome}">
+                        Nome
+                    </td>
+
+                    <td th:text="${usuario.email}">
+                        email@exemplo.com
+                    </td>
+
+                    <td>
+
+                        <span th:class="${usuario.tipo == 'ADMIN'
+                                ? 'ui-badge ui-badge-azul'
+                                : 'ui-badge ui-badge-cinza'}"
+                                th:text="${usuario.tipo == 'ADMIN'
+                                ? '★ ADMIN'
+                                : '● ' + usuario.tipo}">
+                            ● CLIENTE
+                        </span>
+
+                    </td>
+
+                    <td th:text="${usuario.quantidadeAvaliacoes != null
+                        ? usuario.quantidadeAvaliacoes
+                        : 0}">
+                        0
+                    </td>
+
+                    <td>
+
+    <span class="ui-badge ui-badge-amarelo">
+
+        ★
+
+        <span th:text="${#numbers.formatDecimal(
+            usuario.mediaAvaliacoes != null
+                ? usuario.mediaAvaliacoes
+                : 0,
+            1,
+            1
+        )}">
+            0,0
+        </span>
+
+        / 5
+
+    </span>
+
+</td>
+
+                    <td>
+
+                        <form th:if="${usuarioLogado == null
+                            or usuario.id != usuarioLogado.id}"
+                            th:action="@{/admin/usuario/excluir/{id}(id=${usuario.id})}"
+                            method="post"
+                            data-loading="true"
+                            onsubmit="return confirm('Deseja excluir este usuário?');">
+
+                            <button class="botao-admin botao-excluir"
+                            type="submit">
+                                Excluir
+                            </button>
+
+                        </form>
+
+                        <span class="ui-badge ui-badge-verde"
+                                th:if="${usuarioLogado != null
+                                and usuario.id == usuarioLogado.id}">
+                            ● Conta atual
+                        </span>
+
+                    </td>
+
+                </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </section>
+
+    <a class="voltar-dashboard"
+       href="/dashboard">
+        ← Voltar ao Painel Administrativo
+    </a>
+
+</main>
+
+</body>
+</html>

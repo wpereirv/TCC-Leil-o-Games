@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="pt-br"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <title>Perfil do Vendedor</title>
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+
+    <link href="https://fonts.googleapis.com/css2?family=Audiowide&display=swap"
+          rel="stylesheet">
+
+    <link rel="stylesheet" href="/css/style.css">
+
+</head>
+
+<body>
+
+<div th:replace="~{fragments/cabecalho-site :: cabecalho}">
+</div>
+
+<div class="container">
+
+    <h1>
+
+        Perfil do Vendedor
+
+    </h1>
+
+    <br>
+
+    <h2 th:text="${vendedor.nome}"></h2>
+
+    <br>
+
+    <p>
+
+        <strong>E-mail:</strong>
+
+        <span th:text="${vendedor.email}"></span>
+
+    </p>
+
+    <br>
+
+    <p>
+
+        <strong>Média das avaliações:</strong>
+
+        ⭐
+
+        <span th:text="${vendedor.mediaAvaliacoes}"></span>
+
+        /5
+
+    </p>
+
+    <br>
+
+    <p>
+
+        <strong>Total de avaliações:</strong>
+
+        <span th:text="${vendedor.quantidadeAvaliacoes}"></span>
+
+    </p>
+
+    <br><br>
+
+    <h2>
+
+        ⭐ Avaliações
+
+    </h2>
+
+    <br>
+
+    <div th:if="${#lists.isEmpty(avaliacoes)}">
+
+        Este vendedor ainda não recebeu avaliações.
+
+    </div>
+
+    <div th:unless="${#lists.isEmpty(avaliacoes)}">
+
+        <table>
+
+            <tr>
+
+                <th>Comprador</th>
+
+                <th>Nota</th>
+
+                <th>Comentário</th>
+
+            </tr>
+
+            <tr th:each="avaliacao : ${avaliacoes}">
+
+                <td th:text="${avaliacao.comprador.nome}">
+                </td>
+
+                <td>
+
+                    ⭐
+
+                    <span th:text="${avaliacao.nota}"></span>
+
+                    /5
+
+                </td>
+
+                <td th:text="${avaliacao.comentario}">
+                </td>
+
+            </tr>
+
+        </table>
+
+    </div>
+
+</div>
+
+<footer>
+
+© 2026 Leilão Games - Projeto TCC TADS
+
+<div class="redes">
+
+<i class="fa-brands fa-facebook"></i>
+
+<i class="fa-brands fa-instagram"></i>
+
+<i class="fa-brands fa-discord"></i>
+
+</div>
+
+</footer>
+
+</body>
+</html>

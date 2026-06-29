@@ -1,0 +1,253 @@
+<div xmlns:th="http://www.thymeleaf.org"
+     th:fragment="feedback">
+
+    <div class="ui-toast-container"
+         aria-live="polite"
+         aria-atomic="true">
+
+        <div class="ui-toast ui-toast-sucesso"
+             th:if="${sucesso != null}">
+
+            <span th:text="${sucesso}">
+                Operação realizada com sucesso.
+            </span>
+
+            <button class="ui-toast-fechar"
+                    type="button"
+                    aria-label="Fechar">
+                ×
+            </button>
+
+        </div>
+
+        <div class="ui-toast ui-toast-erro"
+             th:if="${erro != null}">
+
+            <span th:text="${erro}">
+                Não foi possível realizar a operação.
+            </span>
+
+            <button class="ui-toast-fechar"
+                    type="button"
+                    aria-label="Fechar">
+                ×
+            </button>
+
+        </div>
+
+    </div>
+
+    <div id="loadingGlobal"
+         class="ui-loading"
+         aria-hidden="true">
+
+        <div class="ui-loading-conteudo"
+             role="status">
+
+            <div class="ui-spinner">
+            </div>
+
+            <strong>Carregando...</strong>
+
+        </div>
+
+    </div>
+
+    <script>
+        (function () {
+
+            function fecharToast(toast) {
+
+                if (!toast
+                        || toast.classList.contains(
+                            "ui-toast-saindo"
+                        )) {
+
+                    return;
+                }
+
+                toast.classList.add(
+                    "ui-toast-saindo"
+                );
+
+                setTimeout(
+                    function () {
+                        toast.remove();
+                    },
+                    250
+                );
+            }
+
+            function prepararToast(toast) {
+
+                const botao =
+                        toast.querySelector(
+                            ".ui-toast-fechar"
+                        );
+
+                if (botao) {
+
+                    botao.addEventListener(
+                        "click",
+                        function () {
+                            fecharToast(toast);
+                        }
+                    );
+                }
+
+                setTimeout(
+                    function () {
+                        fecharToast(toast);
+                    },
+                    5000
+                );
+            }
+
+            function mostrarCarregamento() {
+
+                const loading =
+                        document.getElementById(
+                            "loadingGlobal"
+                        );
+
+                if (!loading) {
+                    return;
+                }
+
+                loading.classList.add("ativo");
+
+                loading.setAttribute(
+                    "aria-hidden",
+                    "false"
+                );
+            }
+
+            function esconderCarregamento() {
+
+                const loading =
+                        document.getElementById(
+                            "loadingGlobal"
+                        );
+
+                if (!loading) {
+                    return;
+                }
+
+                loading.classList.remove("ativo");
+
+                loading.setAttribute(
+                    "aria-hidden",
+                    "true"
+                );
+            }
+
+            function criarToast(
+                    mensagem,
+                    tipo) {
+
+                const container =
+                        document.querySelector(
+                            ".ui-toast-container"
+                        );
+
+                if (!container) {
+                    return;
+                }
+
+                const toast =
+                        document.createElement("div");
+
+                toast.className =
+                        "ui-toast ui-toast-"
+                        + (tipo || "info");
+
+                const texto =
+                        document.createElement("span");
+
+                texto.textContent = mensagem;
+
+                const fechar =
+                        document.createElement("button");
+
+                fechar.className =
+                        "ui-toast-fechar";
+
+                fechar.type = "button";
+
+                fechar.setAttribute(
+                        "aria-label",
+                        "Fechar"
+                );
+
+                fechar.textContent = "×";
+
+                toast.appendChild(texto);
+                toast.appendChild(fechar);
+                container.appendChild(toast);
+
+                prepararToast(toast);
+            }
+
+            document.addEventListener(
+                "DOMContentLoaded",
+                function () {
+
+                    document
+                            .querySelectorAll(".ui-toast")
+                            .forEach(prepararToast);
+
+                    document
+                            .querySelectorAll(
+                                "form[data-loading='true']"
+                            )
+                            .forEach(function (formulario) {
+
+                                formulario.addEventListener(
+                                "submit",
+                                    function (evento) {
+
+                                  setTimeout(function () {
+
+                                    if (!evento.defaultPrevented) {
+                                    mostrarCarregamento();
+                                    }
+
+                                    }, 0);
+                                 }
+                                );
+                            });
+
+                    document
+                            .querySelectorAll(
+                                "a[data-loading='true']"
+                            )
+                            .forEach(function (link) {
+
+                                link.addEventListener(
+                                    "click",
+                                    mostrarCarregamento
+                                );
+                            });
+                }
+            );
+
+            window.addEventListener(
+                "pageshow",
+                esconderCarregamento
+            );
+
+            window.UI = {
+                mostrarCarregamento:
+                        mostrarCarregamento,
+
+                esconderCarregamento:
+                        esconderCarregamento,
+
+                toast:
+                        criarToast
+            };
+
+        })();
+    </script>
+
+</div>

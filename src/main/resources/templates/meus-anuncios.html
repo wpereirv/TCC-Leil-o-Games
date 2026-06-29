@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="pt-br"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Meus Anúncios - Leilão Games</title>
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <link rel="stylesheet" href="/css/style.css">
+
+</head>
+
+<body>
+
+<div th:replace="~{fragments/cabecalho-site :: cabecalho}">
+</div>
+
+<main class="pagina-listagem">
+
+    <div class="cabecalho-listagem">
+
+        <div>
+            <h1>Meus anúncios</h1>
+            <p>Gerencie os produtos anunciados por você.</p>
+        </div>
+
+        <a class="btn"
+           href="/anunciar"
+           data-loading="true">
+
+            <i class="fa-solid fa-circle-plus"></i>
+
+            Novo anúncio
+
+        </a>
+
+    </div>
+
+    <div class="estado-vazio"
+         th:if="${#lists.isEmpty(produtos)}">
+
+        <i class="fa-solid fa-box-open"></i>
+
+        Você ainda não possui anúncios.
+
+    </div>
+
+    <div class="lista-produtos"
+         th:unless="${#lists.isEmpty(produtos)}">
+
+        <article class="produto-card"
+                 th:each="produto : ${produtos}">
+
+            <img th:src="${produto.imagem1 != null
+                ? @{'/uploads/' + ${produto.imagem1}}
+                : '/img/sem-imagem.png'}"
+                 alt="Imagem do produto">
+
+            <span th:class="${produto.encerrado == true
+                    ? 'ui-badge ui-badge-vermelho'
+                    : 'ui-badge ui-badge-verde'}">
+
+                <i th:class="${produto.encerrado == true
+                        ? 'fa-solid fa-circle-xmark'
+                        : 'fa-solid fa-circle-check'}">
+                </i>
+
+                <span th:text="${produto.encerrado == true
+                        ? 'Encerrado'
+                        : 'Ativo'}">
+                    Ativo
+                </span>
+
+            </span>
+
+            <h2 th:text="${produto.nome}">
+                Produto
+            </h2>
+
+            <p>
+
+                <strong>Categoria:</strong>
+
+                <span th:text="${produto.categoria != null
+                        ? produto.categoria.nome
+                        : 'Sem categoria'}">
+                    Categoria
+                </span>
+
+            </p>
+
+            <p>
+
+                <strong>Valor inicial:</strong>
+
+                R$
+
+                <span th:text="${#numbers.formatDecimal(
+                    produto.valorInicial,
+                    1,
+                    2
+                )}">
+                    0,00
+                </span>
+
+            </p>
+
+            <div class="acoes-card-produto">
+
+                <a class="btn"
+                   th:href="@{/produto/{id}(id=${produto.id})}"
+                   data-loading="true">
+
+                    <i class="fa-solid fa-eye"></i>
+
+                    Ver produto
+
+                </a>
+
+                <a class="ui-botao"
+                   th:href="@{/produto/editar/{id}(id=${produto.id})}"
+                   data-loading="true">
+
+                    <i class="fa-solid fa-pen"></i>
+
+                    Editar
+
+                </a>
+
+                <form th:action="@{/produto/excluir/{id}(id=${produto.id})}"
+                      method="post"
+                      data-loading="true"
+                      onsubmit="return confirm('Deseja realmente excluir este anúncio?');">
+
+                    <button class="ui-botao ui-botao-perigo"
+                            type="submit">
+
+                        <i class="fa-solid fa-trash"></i>
+
+                        Excluir
+
+                    </button>
+
+                </form>
+
+            </div>
+
+        </article>
+
+    </div>
+
+</main>
+
+<footer>
+    © 2026 Leilão Games - Projeto TCC TADS
+</footer>
+
+</body>
+</html>

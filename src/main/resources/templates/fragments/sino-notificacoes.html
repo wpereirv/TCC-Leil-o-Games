@@ -1,0 +1,522 @@
+<div xmlns:th="http://www.thymeleaf.org"
+     th:fragment="sino"
+     class="notificacoes-cabecalho"
+     th:if="${notificacoesCabecalho != null}">
+
+    <style>
+        .notificacoes-cabecalho {
+            position: relative;
+        }
+
+        .sino-detalhes summary {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px;
+            color: white;
+            cursor: pointer;
+            list-style: none;
+            user-select: none;
+        }
+
+        .sino-detalhes summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .sino-svg {
+            width: 27px;
+            height: 27px;
+            fill: currentColor;
+        }
+
+        .sino-contador {
+            position: absolute;
+            top: -2px;
+            right: -5px;
+            min-width: 20px;
+            padding: 3px 5px;
+            color: white;
+            background: #d90429;
+            border: 2px solid #160000;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: bold;
+            line-height: 1;
+            text-align: center;
+        }
+
+        .notificacoes-dropdown {
+            position: absolute;
+            z-index: 1000;
+            top: 48px;
+            right: 0;
+            width: 390px;
+            color: #222;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.45);
+        }
+
+        .dropdown-titulo {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            color: white;
+            background: #003b8f;
+        }
+
+        .dropdown-titulo h3 {
+            margin: 0;
+            font-size: 18px;
+        }
+
+        .dropdown-titulo form {
+            margin: 0;
+        }
+
+        .dropdown-titulo button {
+            color: white;
+            background: transparent;
+            border: 0;
+            cursor: pointer;
+            font-size: 12px;
+            text-decoration: underline;
+        }
+
+        .dropdown-vazio {
+            padding: 25px;
+            color: #666;
+            text-align: center;
+        }
+
+        .dropdown-notificacao {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 14px;
+            color: #222;
+            background: white;
+            border-bottom: 1px solid #ddd;
+            text-decoration: none;
+        }
+
+        .dropdown-notificacao:hover {
+            background: #f2f5fa;
+        }
+
+        .dropdown-notificacao.nao-lida {
+            background: #fff2f2;
+            border-left: 5px solid #d90429;
+        }
+
+        .dropdown-icone {
+            flex-shrink: 0;
+            font-size: 22px;
+        }
+
+        .dropdown-conteudo {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .dropdown-conteudo p {
+            margin: 0 0 6px;
+            color: #222;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        .dropdown-conteudo time {
+            color: #777;
+            font-size: 11px;
+        }
+
+        .dropdown-rodape {
+            display: block;
+            padding: 13px;
+            color: #003b8f;
+            background: white;
+            text-align: center;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .dropdown-rodape:hover {
+            background: #f2f5fa;
+        }
+
+        @media (max-width: 600px) {
+            .notificacoes-dropdown {
+                position: fixed;
+                top: 90px;
+                right: 4%;
+                width: 92%;
+            }
+        }
+    </style>
+
+    <details class="sino-detalhes">
+
+        <summary id="sinoResumo"
+                 title="Notificações">
+
+            <svg class="sino-svg"
+                 viewBox="0 0 24 24"
+                 aria-hidden="true">
+
+                <path d="M12 22a2.5 2.5 0 0 0
+                         2.45-2h-4.9A2.5 2.5 0 0 0
+                         12 22ZM18 8a6 6 0 0 0-12 0
+                         c0 7-3 7-3 9h18
+                         c0-2-3-2-3-9Z">
+                </path>
+
+            </svg>
+
+            <span id="contadorNotificacoes"
+                  class="sino-contador"
+                  th:if="${quantidadeNotificacoesNaoLidas > 0}"
+                  th:text="${quantidadeNotificacoesNaoLidas > 99
+                      ? '99+'
+                      : quantidadeNotificacoesNaoLidas}">
+                0
+            </span>
+
+        </summary>
+
+        <div class="notificacoes-dropdown">
+
+            <div class="dropdown-titulo">
+
+                <h3>Notificações</h3>
+
+                <form id="formMarcarNotificacoes"
+                      action="/notificacoes/marcar-todas"
+                      method="post"
+                      th:style="${quantidadeNotificacoesNaoLidas > 0
+                          ? ''
+                          : 'display:none'}">
+
+                    <button type="submit">
+                        Marcar como lidas
+                    </button>
+
+                </form>
+
+            </div>
+
+            <div id="listaNotificacoesCabecalho">
+
+                <div class="dropdown-vazio"
+                     th:if="${#lists.isEmpty(notificacoesCabecalho)}">
+
+                    Nenhuma notificação.
+
+                </div>
+
+                <a class="dropdown-notificacao"
+                   th:each="notificacao : ${notificacoesCabecalho}"
+                   th:classappend="${notificacao.lida == false
+                        ? 'nao-lida'
+                        : ''}"
+                   th:href="@{/notificacoes/abrir/{id}
+                        (id=${notificacao.id})}">
+
+                    <span class="dropdown-icone">
+
+                        <span th:if="${notificacao.tipo == 'MENSAGEM'}">
+                            💬
+                        </span>
+
+                        <span th:if="${notificacao.tipo == 'LANCE'}">
+                            🔨
+                        </span>
+
+                        <span th:if="${notificacao.tipo == 'LEILAO_ENCERRADO'}">
+                            ⏰
+                        </span>
+
+                        <span th:if="${notificacao.tipo == 'LEILAO_VENCIDO'}">
+                            🏆
+                        </span>
+
+                        <span th:if="${notificacao.tipo == null}">
+                            🔔
+                        </span>
+
+                    </span>
+
+                    <span class="dropdown-conteudo">
+
+                        <p th:text="${notificacao.mensagem}">
+                            Notificação
+                        </p>
+
+                        <time th:text="${notificacao.dataHoraFormatada}">
+                            Data
+                        </time>
+
+                    </span>
+
+                </a>
+
+            </div>
+
+            <a class="dropdown-rodape"
+               href="/notificacoes">
+                Ver todas as notificações
+            </a>
+
+        </div>
+
+    </details>
+
+    <script>
+        (function () {
+
+            const resumo =
+                    document.getElementById("sinoResumo");
+
+            const lista =
+                    document.getElementById(
+                        "listaNotificacoesCabecalho"
+                    );
+
+            const formMarcarTodas =
+                    document.getElementById(
+                        "formMarcarNotificacoes"
+                    );
+
+            if (!resumo || !lista) {
+                return;
+            }
+
+            function atualizarContador(quantidade) {
+
+                let contador =
+                        document.getElementById(
+                            "contadorNotificacoes"
+                        );
+
+                if (quantidade > 0) {
+
+                    if (!contador) {
+
+                        contador =
+                                document.createElement("span");
+
+                        contador.id =
+                                "contadorNotificacoes";
+
+                        contador.className =
+                                "sino-contador";
+
+                        resumo.appendChild(contador);
+                    }
+
+                    contador.textContent =
+                            quantidade > 99
+                                    ? "99+"
+                                    : quantidade;
+
+                    if (formMarcarTodas) {
+                        formMarcarTodas.style.display = "";
+                    }
+
+                } else {
+
+                    if (contador) {
+                        contador.remove();
+                    }
+
+                    if (formMarcarTodas) {
+                        formMarcarTodas.style.display = "none";
+                    }
+                }
+            }
+
+            function escolherIcone(tipo) {
+
+                switch (tipo) {
+
+                    case "MENSAGEM":
+                        return "💬";
+
+                    case "LANCE":
+                        return "🔨";
+
+                    case "LEILAO_ENCERRADO":
+                        return "⏰";
+
+                    case "LEILAO_VENCIDO":
+                        return "🏆";
+
+                    default:
+                        return "🔔";
+                }
+            }
+
+            function montarLista(notificacoes) {
+
+                lista.replaceChildren();
+
+                if (notificacoes.length === 0) {
+
+                    const vazio =
+                            document.createElement("div");
+
+                    vazio.className =
+                            "dropdown-vazio";
+
+                    vazio.textContent =
+                            "Nenhuma notificação.";
+
+                    lista.appendChild(vazio);
+
+                    return;
+                }
+
+                for (const notificacao of notificacoes) {
+
+                    const link =
+                            document.createElement("a");
+
+                    link.className =
+                            "dropdown-notificacao";
+
+                    if (notificacao.lida === false) {
+                        link.classList.add("nao-lida");
+                    }
+
+                    link.href =
+                            "/notificacoes/abrir/"
+                            + encodeURIComponent(
+                                notificacao.id
+                            );
+
+                    const icone =
+                            document.createElement("span");
+
+                    icone.className =
+                            "dropdown-icone";
+
+                    icone.textContent =
+                            escolherIcone(
+                                notificacao.tipo
+                            );
+
+                    const conteudo =
+                            document.createElement("span");
+
+                    conteudo.className =
+                            "dropdown-conteudo";
+
+                    const mensagem =
+                            document.createElement("p");
+
+                    mensagem.textContent =
+                            notificacao.mensagem;
+
+                    const data =
+                            document.createElement("time");
+
+                    data.textContent =
+                            notificacao.dataHora;
+
+                    conteudo.appendChild(mensagem);
+                    conteudo.appendChild(data);
+
+                    link.appendChild(icone);
+                    link.appendChild(conteudo);
+
+                    lista.appendChild(link);
+                }
+            }
+
+            async function atualizarNotificacoes() {
+
+                try {
+
+                    const respostas =
+                            await Promise.all([
+
+                                fetch(
+                                    "/notificacoes/quantidade",
+                                    { cache: "no-store" }
+                                ),
+
+                                fetch(
+                                    "/notificacoes/recentes",
+                                    { cache: "no-store" }
+                                )
+                            ]);
+
+                    if (!respostas[0].ok
+                            || !respostas[1].ok) {
+
+                        return;
+                    }
+
+                    const quantidade =
+                            Number(
+                                await respostas[0].text()
+                            );
+
+                    const notificacoes =
+                            await respostas[1].json();
+
+                    atualizarContador(quantidade);
+                    montarLista(notificacoes);
+
+                } catch (erro) {
+
+                    console.log(
+                        "Não foi possível atualizar as notificações."
+                    );
+                }
+            }
+
+if (formMarcarTodas) {
+
+    formMarcarTodas.addEventListener(
+        "submit",
+        async function (evento) {
+
+            evento.preventDefault();
+
+            try {
+
+                await fetch(
+                    "/notificacoes/marcar-todas",
+                    {
+                        method: "POST",
+                        credentials: "same-origin"
+                    }
+                );
+
+                await atualizarNotificacoes();
+
+            } catch (erro) {
+
+                console.log(
+                    "Não foi possível marcar as notificações."
+                );
+            }
+        }
+    );
+}
+            atualizarNotificacoes();
+
+            setInterval(
+                atualizarNotificacoes,
+                10000
+            );
+
+        })();
+    </script>
+
+</div>

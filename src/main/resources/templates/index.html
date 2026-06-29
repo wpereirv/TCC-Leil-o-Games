@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Leilão Games</title>
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+
+    <link href="https://fonts.googleapis.com/css2?family=Audiowide&display=swap"
+          rel="stylesheet">
+
+    <link rel="stylesheet"
+          href="/css/style.css">
+
+</head>
+
+<body>
+
+<div th:replace="~{fragments/cabecalho-site :: cabecalho}">
+</div>
+
+<section class="hero">
+
+    <h1>
+
+        O MAIOR PORTAL <br>
+
+        <span class="azul">
+
+            GAMER
+
+        </span>
+
+        <span class="vermelho">
+
+            DE LEILÕES
+
+        </span>
+
+    </h1>
+
+    <p>
+
+        Compre, venda e dispute leilões de jogos,
+        consoles, videogames retrô e itens colecionáveis
+        em uma plataforma moderna e segura.
+
+    </p>
+
+    <form class="barra-pesquisa"
+          action="/pesquisa"
+          method="get">
+
+        <input type="text"
+               name="nome"
+               placeholder="Pesquisar jogos, consoles e colecionáveis...">
+
+        <button type="submit">
+
+            <i class="fa-solid fa-magnifying-glass"></i>
+
+        </button>
+
+    </form>
+
+</section>
+
+<section class="cards">
+
+    <div class="card azul-card">
+
+        <i class="fa-solid fa-gamepad"></i>
+
+        <h2>JOGOS</h2>
+
+        <p>
+
+            Encontre jogos raros, clássicos e lançamentos
+            com preços disputados em leilões.
+
+        </p>
+
+    </div>
+
+    <div class="card vermelho-card">
+
+        <i class="fa-solid fa-tv"></i>
+
+        <h2>CONSOLES</h2>
+
+        <p>
+
+            Playstation, Xbox, Nintendo,
+            consoles retrô e edições especiais
+            para colecionadores.
+
+        </p>
+
+    </div>
+
+    <div class="card azul-card">
+
+        <i class="fa-solid fa-gem"></i>
+
+        <h2>
+
+            ITENS<br>COLECIONÁVEIS
+
+        </h2>
+
+        <p>
+
+            Action figures, controles,
+            acessórios, edições limitadas
+            e itens exclusivos gamers.
+
+        </p>
+
+    </div>
+
+</section>
+
+<section class="container"
+         th:if="${produtos != null}">
+
+    <h1>
+        <i class="fa-solid fa-fire vermelho"></i>
+        Últimos Leilões
+    </h1>
+
+    <div class="lista-produtos">
+
+        <div class="produto-card"
+             th:each="produto : ${produtos}">
+
+            <img th:src="${produto.imagem1 != null}
+            ? @{'/uploads/' + ${produto.imagem1}}
+            : '/img/sem-imagem.png'">
+
+            <span th:class="${produto.encerrado == true
+        ? 'ui-badge ui-badge-vermelho'
+        : 'ui-badge ui-badge-verde'}">
+
+    <i th:class="${produto.encerrado == true
+            ? 'fa-solid fa-circle-xmark'
+            : 'fa-solid fa-circle-check'}">
+    </i>
+
+    <span th:text="${produto.encerrado == true
+            ? 'Encerrado'
+            : 'Ativo'}">
+        Ativo
+    </span>
+
+</span>
+
+            <h2 th:text="${produto.nome}"></h2>
+
+            <p>
+
+                <strong>Lance Inicial:</strong>
+
+                R$
+
+                <span th:text="${produto.valorInicial}"></span>
+
+            </p>
+
+            <a class="btn botao-card-produto"
+   th:href="@{/produto/{id}(id=${produto.id})}"
+   data-loading="true">
+
+    <i class="fa-solid fa-eye"></i>
+
+    Ver Produto
+
+</a>
+
+        </div>
+
+    </div>
+
+</section>
+
+<section class="container"
+         th:if="${terminandoEmBreve != null and !#lists.isEmpty(terminandoEmBreve)}">
+
+    <h1>
+        <i class="fa-solid fa-clock azul"></i>
+        Terminando em Breve
+    </h1>
+
+    <div class="lista-produtos">
+
+        <div class="produto-card"
+             th:each="produto : ${terminandoEmBreve}">
+
+            <img th:src="${produto.imagem1 != null}
+            ? @{'/uploads/' + ${produto.imagem1}}
+            : '/img/sem-imagem.png'">
+
+            <span class="ui-badge ui-badge-amarelo">
+
+    <i class="fa-solid fa-clock"></i>
+
+    Terminando em breve
+
+</span>
+
+            <h2 th:text="${produto.nome}"></h2>
+
+            <p>
+
+                <strong>Encerra em:</strong>
+
+                <span th:text="${#temporals.format(produto.dataFim,'dd/MM/yyyy HH:mm')}"></span>
+
+            </p>
+
+            <a class="btn botao-card-produto"
+   th:href="@{/produto/{id}(id=${produto.id})}"
+   data-loading="true">
+
+    <i class="fa-solid fa-eye"></i>
+
+    Ver Produto
+
+</a>
+
+        </div>
+
+    </div>
+
+</section>
+
+<footer>
+
+    © 2026 Leilão Games - Projeto TCC TADS
+
+    <div class="redes">
+
+        <i class="fa-brands fa-facebook"></i>
+
+        <i class="fa-brands fa-instagram"></i>
+
+        <i class="fa-brands fa-discord"></i>
+
+    </div>
+
+</footer>
+
+</body>
+
+</html>

@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="pt-br"
+xmlns:th="http://www.thymeleaf.org">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <title>Leilões - Leilão Games</title>
+
+    <link rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+
+    <link href="https://fonts.googleapis.com/css2?family=Audiowide&display=swap"
+    rel="stylesheet">
+
+    <link rel="stylesheet" href="/css/style.css">
+
+</head>
+
+<body>
+
+<div th:replace="~{fragments/cabecalho-site :: cabecalho}">
+</div>
+
+<div class="container">
+
+    <h1>Leilões Ativos</h1>
+
+    <br>
+
+    <form class="filtro-ordenacao"
+      method="get"
+      action="/leiloes"
+      data-loading="true">
+
+        <label>
+
+            Ordenar por:
+
+        </label>
+
+        <select name="ordem"
+                onchange="this.form.requestSubmit()">
+
+            <option value=""
+                    th:selected="${ordem == null}">
+                Mais recentes
+            </option>
+
+            <option value="menorPreco"
+                    th:selected="${ordem == 'menorPreco'}">
+                Menor preço
+            </option>
+
+            <option value="maiorPreco"
+                    th:selected="${ordem == 'maiorPreco'}">
+                Maior preço
+            </option>
+
+            <option value="terminando"
+                    th:selected="${ordem == 'terminando'}">
+                Menor tempo restante
+            </option>
+
+        </select>
+
+    </form>
+
+    <div class="lista-produtos">
+
+        <div class="produto-card"
+             th:each="produto : ${produtos}">
+
+            <img
+                th:src="${produto.imagem1 != null}
+                ? @{'/uploads/' + ${produto.imagem1}}
+                : '/img/sem-imagem.png'">
+
+            <h2 th:text="${produto.nome}"></h2>
+
+            <p>
+
+                <b>Categoria:</b>
+
+                <span th:text="${produto.categoria != null ? produto.categoria.nome : 'Sem categoria'}">
+                </span>
+
+            </p>
+
+            <p>
+
+                <b>Descrição:</b>
+
+                <span th:text="${produto.descricao}"></span>
+
+            </p>
+
+            <p>
+
+                <b>Lance Inicial:</b>
+
+                R$
+
+                <span th:text="${produto.valorInicial}"></span>
+
+            </p>
+
+    <span th:class="${produto.encerrado == true
+        ? 'ui-badge ui-badge-vermelho'
+        : 'ui-badge ui-badge-verde'}">
+
+        <i th:class="${produto.encerrado == true
+            ? 'fa-solid fa-circle-xmark'
+            : 'fa-solid fa-circle-check'}">
+        </i>
+
+        <span th:text="${produto.encerrado == true
+            ? 'Leilão encerrado'
+            : 'Leilão ativo'}">
+        Leilão ativo
+        </span>
+
+    </span>
+
+            <a class="btn botao-card-produto"
+                th:href="@{/produto/{id}(id=${produto.id})}"
+                data-loading="true">
+
+                    <i class="fa-solid fa-eye"></i>
+
+                    Ver Detalhes
+
+            </a>
+
+        </div>
+
+    </div>
+
+</div>
+
+<footer>
+
+    © 2026 Leilão Games - Projeto TCC TADS
+
+    <div class="redes">
+
+        <i class="fa-brands fa-facebook"></i>
+
+        <i class="fa-brands fa-instagram"></i>
+
+        <i class="fa-brands fa-discord"></i>
+
+    </div>
+
+</footer>
+
+</body>
+
+</html>

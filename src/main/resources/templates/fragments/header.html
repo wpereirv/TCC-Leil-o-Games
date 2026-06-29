@@ -1,0 +1,51 @@
+<header>
+
+<div class="logo">
+    LEILÃO
+    <span>GAMES</span>
+</div>
+
+<nav>
+
+    <a href="/">
+        <i class="fa-solid fa-house"></i>
+        Início
+    </a>
+
+    <a href="/leiloes">
+        <i class="fa-solid fa-gavel"></i>
+        Leilões
+    </a>
+
+    <a href="/categorias">
+        <i class="fa-solid fa-tag"></i>
+        Categorias
+    </a>
+
+    <a href="/colecionaveis">
+        <i class="fa-solid fa-star"></i>
+        Colecionáveis
+    </a>
+
+</nav>
+
+<div class="login">
+
+    <div class="perfil">
+        <i class="fa-solid fa-user"></i>
+    </div>
+
+    <div th:if="${usuarioLogado == null}">
+        <a href="/login">Login</a>
+        <a href="/cadastro">Cadastrar</a>
+    </div>
+
+    <div th:if="${usuarioLogado != null}">
+        <a href="/minha-conta"
+           th:text="${#strings.arraySplit(usuarioLogado.nome,' ')[0]}">
+        </a>
+    </div>
+
+</div>
+
+</header>

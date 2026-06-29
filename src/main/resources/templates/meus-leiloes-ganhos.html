@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="pt-br"
+xmlns:th="http://www.thymeleaf.org">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <title>Meus Leilões Ganhos - Leilão Games</title>
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+
+    <link href="https://fonts.googleapis.com/css2?family=Audiowide&display=swap"
+          rel="stylesheet">
+
+    <link rel="stylesheet"
+          href="/css/style.css">
+
+</head>
+
+<body>
+
+<div th:replace="~{fragments/cabecalho-site :: cabecalho}">
+</div>
+
+<div class="container">
+
+    <h1>
+
+        🏆 Meus Leilões Ganhos
+
+    </h1>
+
+    <br><br>
+
+    <div class="lista-produtos">
+
+        <div class="produto-card"
+             th:each="produto : ${produtos}">
+
+            <img
+                    th:if="${produto.imagem1 != null}"
+                    th:src="@{'/uploads/' + ${produto.imagem1}}">
+
+            <h2
+                    th:text="${produto.nome}">
+            </h2>
+
+            <p>
+
+                <strong>Vendedor:</strong>
+
+                <span
+                        th:text="${produto.usuario.nome}">
+                </span>
+
+            </p>
+
+            <p>
+
+                <strong>Valor do Leilão:</strong>
+
+                R$
+
+                <span
+                        th:text="${produto.valorInicial}">
+                </span>
+
+            </p>
+
+            <br>
+
+            <a th:href="@{/produto/{id}(id=${produto.id})}">
+
+                <button class="btn">
+
+                    Ver Produto
+
+                </button>
+
+            </a>
+
+        </div>
+
+    </div>
+
+    <div th:if="${#lists.isEmpty(produtos)}">
+
+        <br><br>
+
+        <h2>
+
+            Você ainda não venceu nenhum leilão.
+
+        </h2>
+
+    </div>
+
+</div>
+
+<footer>
+
+© 2026 Leilão Games - Projeto TCC TADS
+
+<div class="redes">
+
+    <i class="fa-brands fa-facebook"></i>
+
+    <i class="fa-brands fa-instagram"></i>
+
+    <i class="fa-brands fa-discord"></i>
+
+</div>
+
+</footer>
+
+</body>
+</html>

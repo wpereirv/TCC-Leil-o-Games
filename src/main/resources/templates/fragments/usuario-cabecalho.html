@@ -1,0 +1,115 @@
+<div xmlns:th="http://www.thymeleaf.org"
+     th:fragment="usuario"
+     class="login">
+
+    <style>
+        .usuario-cabecalho-area {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 15px;
+        }
+
+        .usuario-cabecalho-link {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: white;
+            text-decoration: none;
+        }
+
+        .usuario-avatar {
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid white;
+            border-radius: 50%;
+        }
+
+        .usuario-nome {
+            max-width: 130px;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            font-size: 17px;
+        }
+
+        .usuario-cabecalho-area .botao-admin-cabecalho {
+    padding: 9px 13px;
+    color: white;
+    background: #d90429;
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: bold;
+    white-space: nowrap;
+}
+
+.usuario-cabecalho-area .botao-admin-cabecalho:hover {
+    background: #a90020;
+}
+    </style>
+
+    <div class="usuario-cabecalho-area"
+         th:if="${usuarioLogado != null}">
+
+        <a class="usuario-cabecalho-link"
+           href="/minha-conta"
+           title="Minha Conta">
+
+            <span class="usuario-avatar">
+
+    <svg viewBox="0 0 16 16"
+         width="25"
+         height="25"
+         fill="currentColor"
+         aria-hidden="true">
+
+        <path d="M3 14s-1 0-1-1
+                 1-4 6-4
+                 6 3 6 4
+                 -1 1-1 1H3z"/>
+
+        <path d="M8 8a3 3 0 1 0 0-6
+                 3 3 0 0 0 0 6z"/>
+
+    </svg>
+
+</span>
+
+            <span class="usuario-nome"
+                  th:text="${usuarioLogado.nome}">
+                Usuário
+            </span>
+
+        </a>
+
+        <a class="botao-admin-cabecalho"
+   href="/dashboard"
+   th:if="${usuarioLogado.tipo == 'ADMIN'}">
+
+    Painel Admin
+
+    </a>
+
+        <div th:replace="~{fragments/sino-notificacoes :: sino}">
+        </div>
+
+    </div>
+
+    <div class="usuario-cabecalho-area"
+     th:if="${usuarioLogado == null}">
+
+    <a href="/login">
+        Login
+    </a>
+
+    <a href="/cadastro">
+        Cadastrar
+    </a>
+
+    </div>
+
+</div>

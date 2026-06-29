@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="pt-br"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Cadastro - Leilão Games</title>
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <link rel="stylesheet" href="/css/style.css">
+
+</head>
+
+<body>
+
+<div th:replace="~{fragments/cabecalho-site :: cabecalho}">
+</div>
+
+<main class="auth-pagina">
+
+    <section class="auth-card">
+
+        <div class="auth-icone">
+            <i class="fa-solid fa-user-plus"></i>
+        </div>
+
+        <h1>Criar conta</h1>
+
+        <p class="auth-subtitulo">
+            Cadastre-se para comprar, vender e participar dos leilões.
+        </p>
+
+        <form class="auth-form"
+              action="/cadastro"
+              method="post"
+              data-loading="true">
+
+            <label for="nome">Nome completo</label>
+
+            <input id="nome"
+                   type="text"
+                   name="nome"
+                   placeholder="Digite seu nome"
+                   autocomplete="name"
+                   maxlength="120"
+                   required>
+
+            <label for="email">E-mail</label>
+
+            <input id="email"
+                   type="email"
+                   name="email"
+                   placeholder="seuemail@exemplo.com"
+                   autocomplete="email"
+                   maxlength="150"
+                   required>
+
+            <label for="senha">Senha</label>
+
+            <input id="senha"
+                   type="password"
+                   name="senha"
+                   placeholder="Mínimo de 6 caracteres"
+                   autocomplete="new-password"
+                   minlength="6"
+                   required>
+
+            <button class="btn"
+                    type="submit">
+
+                <i class="fa-solid fa-user-check"></i>
+
+                Criar conta
+
+            </button>
+
+        </form>
+
+        <p class="auth-link">
+
+            Já possui uma conta?
+
+            <a href="/login"
+               data-loading="true">
+                Entrar
+            </a>
+
+        </p>
+
+    </section>
+
+</main>
+
+<footer>
+    © 2026 Leilão Games
+</footer>
+
+<script th:inline="javascript">
+
+    document.addEventListener("DOMContentLoaded", function () {
+
+        const erro =
+                /*[[${param.erro != null
+                    ? param.erro[0]
+                    : null}]]*/ null;
+
+        const mensagens = {
+            campos: "Preencha todos os campos.",
+            senhaCurta: "A senha deve possuir pelo menos 6 caracteres.",
+            emailExistente: "Este e-mail já está cadastrado."
+        };
+
+        if (erro && mensagens[erro]) {
+
+            window.UI.toast(
+                mensagens[erro],
+                "erro"
+            );
+        }
+
+    });
+
+</script>
+
+</body>
+</html>

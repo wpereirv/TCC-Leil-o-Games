@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="pt-br"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Gerenciar Produtos - Leilão Games</title>
+
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/admin.css">
+</head>
+
+<body>
+
+<div th:replace="~{fragments/cabecalho-admin :: cabecalho}">
+</div>
+
+<main class="admin-container">
+
+    <h1 class="admin-titulo">
+        Gerenciamento de Produtos
+    </h1>
+
+    <p class="admin-resumo">
+        Total:
+        <strong th:text="${#lists.size(produtos)}">
+            0
+        </strong>
+    </p>
+
+    <section class="admin-card">
+
+        <div class="sem-registros"
+             th:if="${#lists.isEmpty(produtos)}">
+
+            Nenhum produto cadastrado.
+
+        </div>
+
+        <div class="tabela-wrapper"
+             th:if="${!#lists.isEmpty(produtos)}">
+
+            <table class="tabela-admin">
+
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Produto</th>
+                    <th>Categoria</th>
+                    <th>Vendedor</th>
+                    <th>Valor inicial</th>
+                    <th>Status</th>
+                    <th>Ações</th>
+                </tr>
+                </thead>
+
+                <tbody>
+
+                <tr th:each="produto : ${produtos}">
+
+                    <td th:text="${produto.id}">
+                        1
+                    </td>
+
+                    <td th:text="${produto.nome}">
+                        Produto
+                    </td>
+
+                    <td th:text="${produto.categoria != null
+                        ? produto.categoria.nome
+                        : 'Sem categoria'}">
+                        Categoria
+                    </td>
+
+                    <td th:text="${produto.usuario != null
+                        ? produto.usuario.nome
+                        : 'Não informado'}">
+                        Vendedor
+                    </td>
+
+                    <td>
+                        R$
+                        <span th:text="${#numbers.formatDecimal(
+                            produto.valorInicial,
+                            1,
+                            2
+                        )}">
+                            0,00
+                        </span>
+                    </td>
+
+                    <td>
+
+                        <span th:class="${produto.encerrado == true
+                                ? 'ui-badge ui-badge-vermelho'
+                                : 'ui-badge ui-badge-verde'}"
+                                th:text="${produto.encerrado == true
+                                ? '● Encerrado'
+                                : '● Ativo'}">
+                            ● Ativo
+                        </span>
+
+                    </td>
+
+                    <td>
+
+                        <div class="acoes-tabela">
+
+                            <a class="botao-admin botao-visualizar"
+                               th:href="@{/produto/{id}(id=${produto.id})}"
+                                data-loading="true">
+                               Ver
+                            </a>
+
+                        <form th:action="@{/admin/produto/excluir/{id}(id=${produto.id})}"
+                                method="post"
+                                data-loading="true"
+                                onsubmit="return confirm('Deseja excluir este produto?');">
+
+                            <button class="botao-admin botao-excluir"
+                                type="submit">
+                            Excluir
+                            </button>
+
+                        </form>
+
+                        </div>
+
+                    </td>
+
+                </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </section>
+
+    <a class="voltar-dashboard"
+       href="/dashboard">
+        ← Voltar ao Painel Administrativo
+    </a>
+
+</main>
+
+</body>
+</html>

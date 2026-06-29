@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="pt-br"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Editar Produto - Leilão Games</title>
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <link rel="stylesheet" href="/css/style.css">
+
+</head>
+
+<body>
+
+<div th:replace="~{fragments/cabecalho-site :: cabecalho}">
+</div>
+
+<main class="form-pagina">
+
+    <section class="form-card">
+
+        <div class="form-cabecalho">
+
+            <i class="fa-solid fa-pen-to-square"></i>
+
+            <div>
+                <h1>Editar produto</h1>
+                <p>Atualize as informações do seu anúncio.</p>
+            </div>
+
+        </div>
+
+        <form class="form-grade"
+              action="/produto/editar"
+              method="post"
+              data-loading="true">
+
+            <input type="hidden"
+                   name="id"
+                   th:value="${produto.id}">
+
+            <div class="campo campo-largo">
+
+                <label for="nome">Nome do produto</label>
+
+                <input id="nome"
+                       type="text"
+                       name="nome"
+                       th:value="${produto.nome}"
+                       maxlength="150"
+                       required>
+
+            </div>
+
+            <div class="campo">
+
+                <label for="categoria">Categoria</label>
+
+                <select id="categoria"
+                        name="categoria.id"
+                        required>
+
+                    <option th:each="categoria : ${categorias}"
+                            th:value="${categoria.id}"
+                            th:text="${categoria.nome}"
+                            th:selected="${produto.categoria != null
+                                and categoria.id == produto.categoria.id}">
+                        Categoria
+                    </option>
+
+                </select>
+
+            </div>
+
+            <div class="campo">
+
+                <label for="valorInicial">Valor inicial</label>
+
+                <input id="valorInicial"
+                       type="number"
+                       step="0.01"
+                       min="0.01"
+                       inputmode="decimal"
+                       name="valorInicial"
+                       th:value="${produto.valorInicial}"
+                       required>
+
+            </div>
+
+            <div class="campo campo-largo">
+
+                <label for="descricao">Descrição</label>
+
+                <textarea id="descricao"
+                          name="descricao"
+                          maxlength="2000"
+                          required
+                          th:text="${produto.descricao}">
+                </textarea>
+
+            </div>
+
+            <div class="form-acoes campo-largo">
+
+                <a class="ui-botao ui-botao-perigo"
+                   href="/meus-anuncios"
+                   data-loading="true">
+                    Cancelar
+                </a>
+
+                <button class="btn"
+                        type="submit">
+
+                    <i class="fa-solid fa-floppy-disk"></i>
+
+                    Salvar alterações
+
+                </button>
+
+            </div>
+
+        </form>
+
+    </section>
+
+</main>
+
+<footer>
+    © 2026 Leilão Games - Projeto TCC TADS
+</footer>
+
+</body>
+</html>

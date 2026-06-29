@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="pt-br"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Chat - Leilão Games</title>
+
+    <link rel="stylesheet" href="/css/style.css">
+
+    <style>
+        .chat-pagina {
+            width: min(900px, 92%);
+            margin: 40px auto;
+        }
+
+        .chat-card {
+            background: rgba(255, 255, 255, 0.96);
+            color: #151515;
+            border-radius: 18px;
+            overflow: hidden;
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.4);
+        }
+
+        .chat-cabecalho {
+            padding: 22px;
+            color: white;
+            background: linear-gradient(90deg, #003b8f, #8f0000);
+        }
+
+        .chat-cabecalho h1 {
+            margin-bottom: 8px;
+            font-size: 25px;
+        }
+
+        .chat-cabecalho a {
+            color: #ffd700;
+            text-decoration: none;
+        }
+
+        .chat-cabecalho a:hover {
+            text-decoration: underline;
+        }
+
+        .mensagens {
+            height: 500px;
+            padding: 24px;
+            overflow-y: auto;
+            background: #e9edf3;
+        }
+
+        .sem-mensagens {
+            margin-top: 40px;
+            color: #666;
+            text-align: center;
+        }
+
+        .mensagem-linha {
+            display: flex;
+            margin-bottom: 16px;
+        }
+
+        .mensagem-linha.enviada {
+            justify-content: flex-end;
+        }
+
+        .mensagem-linha.recebida {
+            justify-content: flex-start;
+        }
+
+        .balao {
+            max-width: 70%;
+            padding: 12px 16px;
+            border-radius: 15px;
+            overflow-wrap: anywhere;
+            box-shadow: 0 2px 7px rgba(0, 0, 0, 0.15);
+        }
+
+        .enviada .balao {
+            color: white;
+            background: #0057b8;
+            border-bottom-right-radius: 3px;
+        }
+
+        .recebida .balao {
+            color: #222;
+            background: white;
+            border-bottom-left-radius: 3px;
+        }
+
+        .balao strong {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 13px;
+        }
+
+        .balao p {
+            margin: 0 0 7px;
+            white-space: pre-wrap;
+        }
+
+        .balao time {
+            display: block;
+            font-size: 11px;
+            text-align: right;
+            opacity: 0.75;
+        }
+
+        .form-mensagem {
+            display: flex;
+            gap: 12px;
+            padding: 18px;
+            background: white;
+        }
+
+        .form-mensagem textarea {
+            flex: 1;
+            min-height: 55px;
+            max-height: 130px;
+            padding: 13px;
+            border: 1px solid #aaa;
+            border-radius: 10px;
+            resize: vertical;
+            font-size: 16px;
+        }
+
+        .form-mensagem button {
+            padding: 0 25px;
+            color: white;
+            background: #d90429;
+            border: 0;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .form-mensagem button:hover {
+            background: #a90020;
+        }
+
+        .voltar {
+            display: inline-block;
+            margin-top: 18px;
+            color: white;
+            text-decoration: none;
+        }
+
+        @media (max-width: 600px) {
+            .mensagens {
+                height: 430px;
+                padding: 14px;
+            }
+
+            .balao {
+                max-width: 86%;
+            }
+
+            .form-mensagem {
+                flex-direction: column;
+            }
+
+            .form-mensagem button {
+                min-height: 46px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div th:replace="~{fragments/cabecalho-site :: cabecalho}">
+</div>
+
+<main class="chat-pagina">
+
+    <section class="chat-card">
+
+        <div class="chat-cabecalho">
+            <h1>
+                Conversa com
+                <span th:text="${conversa.comprador.id == usuarioLogado.id
+                    ? conversa.vendedor.nome
+                    : conversa.comprador.nome}">
+                    Usuário
+                </span>
+            </h1>
+
+            <p>
+                Produto:
+                <a th:href="@{/produto/{id}(id=${conversa.produto.id})}"
+                   th:text="${conversa.produto.nome}">
+                    Produto
+                </a>
+            </p>
+        </div>
+
+        <div id="mensagens" class="mensagens">
+
+            <p class="sem-mensagens"
+               th:if="${#lists.isEmpty(mensagens)}">
+                Ainda não existem mensagens. Comece a conversa!
+            </p>
+
+            <div th:each="mensagem : ${mensagens}"
+                 class="mensagem-linha"
+                 th:classappend="${mensagem.remetente.id == usuarioLogado.id}
+                    ? 'enviada'
+                    : 'recebida'">
+
+                <div class="balao">
+
+                    <strong th:text="${mensagem.remetente.id == usuarioLogado.id
+                        ? 'Você'
+                        : mensagem.remetente.nome}">
+                        Usuário
+                    </strong>
+
+                    <p th:text="${mensagem.texto}">
+                        Mensagem
+                    </p>
+
+                    <time th:text="${mensagem.dataHoraFormatada}">
+                    Data e hora
+                    </time>
+
+                </div>
+            </div>
+        </div>
+
+        <form class="form-mensagem"
+              action="/chat/enviar"
+              method="post">
+
+            <input type="hidden"
+                   name="conversaId"
+                   th:value="${conversa.id}">
+
+            <textarea name="texto"
+                      placeholder="Digite sua mensagem..."
+                      required></textarea>
+
+            <button type="submit">
+                Enviar
+            </button>
+        </form>
+
+    </section>
+
+    <a class="voltar"
+       th:href="@{/produto/{id}(id=${conversa.produto.id})}">
+        ← Voltar para o produto
+    </a>
+
+</main>
+
+<script>
+    const areaMensagens = document.getElementById("mensagens");
+
+    if (areaMensagens) {
+        areaMensagens.scrollTop = areaMensagens.scrollHeight;
+    }
+</script>
+
+</body>
+</html>

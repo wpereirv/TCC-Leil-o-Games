@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="pt-br"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Notificações - Leilão Games</title>
+
+    <link rel="stylesheet" href="/css/style.css">
+
+    <style>
+        .pagina-notificacoes {
+            width: min(900px, 92%);
+            margin: 50px auto;
+        }
+
+        .notificacoes-topo {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .marcar-todas {
+            padding: 11px 18px;
+            color: white;
+            background: #0057b8;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .lista-notificacoes {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .notificacao-card {
+            background: rgba(255, 255, 255, 0.92);
+            border-left: 6px solid #777;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+        }
+
+        .notificacao-card.nao-lida {
+            background: white;
+            border-left-color: #d90429;
+        }
+
+        .notificacao-link {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            padding: 20px;
+            color: #222;
+            text-decoration: none;
+        }
+
+        .notificacao-icone {
+            flex-shrink: 0;
+            font-size: 30px;
+        }
+
+        .notificacao-conteudo {
+            flex: 1;
+        }
+
+        .notificacao-conteudo p {
+            margin: 0 0 8px;
+            font-size: 17px;
+        }
+
+        .notificacao-conteudo time {
+            color: #666;
+            font-size: 13px;
+        }
+
+        .selo-nova {
+            padding: 5px 10px;
+            color: white;
+            background: #d90429;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .sem-notificacoes {
+            padding: 40px;
+            color: #333;
+            background: white;
+            border-radius: 15px;
+            text-align: center;
+        }
+
+        .voltar {
+            display: inline-block;
+            margin-top: 25px;
+            color: white;
+            text-decoration: none;
+        }
+
+        @media (max-width: 600px) {
+            .notificacoes-topo {
+                align-items: stretch;
+                flex-direction: column;
+            }
+
+            .notificacao-link {
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div th:replace="~{fragments/cabecalho-site :: cabecalho}">
+</div>
+
+<main class="pagina-notificacoes">
+
+    <div class="notificacoes-topo">
+
+        <h1>
+            🔔 Notificações
+
+            <span th:if="${quantidadeNaoLidas > 0}"
+                  th:text="'(' + ${quantidadeNaoLidas} + ')'">
+            </span>
+        </h1>
+
+        <form th:if="${quantidadeNaoLidas > 0}"
+              action="/notificacoes/marcar-todas"
+              method="post">
+
+            <button class="marcar-todas"
+                    type="submit">
+                Marcar todas como lidas
+            </button>
+
+        </form>
+
+    </div>
+
+    <div class="sem-notificacoes"
+         th:if="${#lists.isEmpty(notificacoes)}">
+
+        <h2>Nenhuma notificação</h2>
+
+        <p>
+            Seus novos avisos aparecerão aqui.
+        </p>
+
+    </div>
+
+    <section class="lista-notificacoes"
+             th:if="${!#lists.isEmpty(notificacoes)}">
+
+        <article class="notificacao-card"
+                 th:each="notificacao : ${notificacoes}"
+                 th:classappend="${notificacao.lida == false}
+                    ? 'nao-lida'
+                    : ''">
+
+            <a class="notificacao-link"
+               th:href="@{/notificacoes/abrir/{id}
+                    (id=${notificacao.id})}">
+
+                <div class="notificacao-icone">
+
+                    <span th:if="${notificacao.tipo == 'MENSAGEM'}">
+                        💬
+                    </span>
+
+                    <span th:if="${notificacao.tipo == 'LANCE'}">
+                        🔨
+                    </span>
+
+                    <span th:if="${notificacao.tipo == 'LEILAO_ENCERRADO'}">
+                        ⏰
+                    </span>
+
+                    <span th:if="${notificacao.tipo == 'LEILAO_VENCIDO'}">
+                        🏆
+                    </span>
+
+                    <span th:if="${notificacao.tipo == null}">
+                        🔔
+                    </span>
+
+                </div>
+
+                <div class="notificacao-conteudo">
+
+                    <p th:text="${notificacao.mensagem}">
+                        Texto da notificação
+                    </p>
+
+                    <time th:text="${notificacao.dataHoraFormatada}">
+                        Data e hora
+                    </time>
+
+                </div>
+
+                <span class="selo-nova"
+                      th:if="${notificacao.lida == false}">
+                    Nova
+                </span>
+
+            </a>
+
+        </article>
+
+    </section>
+
+    <a href="/minha-conta"
+       class="voltar">
+        ← Voltar para Minha Conta
+    </a>
+
+</main>
+
+</body>
+</html>

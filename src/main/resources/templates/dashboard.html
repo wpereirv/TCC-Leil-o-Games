@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="pt-br"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Painel Administrativo - Leilão Games</title>
+
+    <link rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <link rel="stylesheet" href="/css/style.css">
+
+    <style>
+        .dashboard {
+            width: min(1250px, 94%);
+            margin: 45px auto;
+        }
+
+        .dashboard-titulo {
+            margin-bottom: 8px;
+            text-align: center;
+        }
+
+        .dashboard-subtitulo {
+            margin-bottom: 35px;
+            color: #ccc;
+            text-align: center;
+        }
+
+        .indicadores {
+            display: grid;
+            grid-template-columns: repeat(
+                auto-fit,
+                minmax(190px, 1fr)
+            );
+            gap: 18px;
+        }
+
+        .indicador {
+    position: relative;
+    padding: 23px;
+    color: #222;
+    background:
+        linear-gradient(145deg, #ffffff, #f4f7fc);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    border-radius: 17px;
+    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.24);
+    transition:
+        transform 0.25s ease,
+        box-shadow 0.25s ease;
+}
+
+.indicador:hover {
+    transform: translateY(-5px);
+    box-shadow:
+        0 14px 32px rgba(0, 0, 0, 0.32),
+        0 0 18px color-mix(
+            in srgb,
+            var(--cor) 25%,
+            transparent
+        );
+}
+
+        .indicador::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 6px;
+            height: 100%;
+            background: var(--cor);
+        }
+
+        .indicador-icone {
+    display: inline-grid;
+    width: 52px;
+    height: 52px;
+    color: var(--cor);
+    background: color-mix(
+        in srgb,
+        var(--cor) 13%,
+        white
+    );
+    border-radius: 14px;
+    place-items: center;
+    font-size: 25px;
+}
+
+        .indicador h2 {
+            margin: 13px 0 7px;
+            color: var(--cor);
+            font-size: 32px;
+        }
+
+        .indicador p {
+            color: #555;
+        }
+
+        .dashboard-secao {
+            margin-top: 35px;
+            padding: 25px;
+            color: #222;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
+        }
+
+        .dashboard-secao h2 {
+            margin-bottom: 22px;
+            color: #003b8f;
+        }
+
+        .grafico-area {
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            gap: 35px;
+            align-items: center;
+        }
+
+        .grafico-rosca {
+            --percentual: 0%;
+
+            width: 220px;
+            height: 220px;
+            margin: auto;
+            position: relative;
+            border-radius: 50%;
+            background: conic-gradient(
+                #00a651 0 var(--percentual),
+                #d90429 var(--percentual) 100%
+            );
+        }
+
+        .grafico-rosca::after {
+            content: "";
+            position: absolute;
+            inset: 42px;
+            background: white;
+            border-radius: 50%;
+        }
+
+        .grafico-centro {
+            position: absolute;
+            z-index: 2;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #222;
+        }
+
+        .grafico-centro strong {
+            font-size: 34px;
+        }
+
+        .grafico-centro span {
+            color: #666;
+        }
+
+        .grafico-legenda {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .legenda-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 15px;
+            background: #f4f6fa;
+            border-radius: 10px;
+        }
+
+        .legenda-cor {
+            width: 18px;
+            height: 18px;
+            border-radius: 5px;
+        }
+
+        .legenda-item strong {
+            margin-left: auto;
+            font-size: 22px;
+        }
+
+        .menu-admin {
+            display: grid;
+            grid-template-columns: repeat(
+                auto-fit,
+                minmax(220px, 1fr)
+            );
+            gap: 18px;
+        }
+
+        .menu-card {
+    display: flex;
+    flex-direction: column;
+    min-height: 190px;
+    padding: 24px;
+    color: #222;
+    background:
+        linear-gradient(145deg, #ffffff, #f2f5fa);
+    border: 1px solid #dce2ec;
+    border-radius: 16px;
+    box-shadow: 0 6px 18px rgba(0, 36, 90, 0.1);
+    transition:
+        transform 0.25s ease,
+        border-color 0.25s ease,
+        box-shadow 0.25s ease;
+}
+
+.menu-card:hover {
+    transform: translateY(-5px);
+    border-color: #0057b8;
+    box-shadow: 0 12px 26px rgba(0, 70, 160, 0.18);
+}
+
+        .menu-card h3 {
+            margin-bottom: 12px;
+            color: #003b8f;
+        }
+
+        .menu-card p {
+            margin-bottom: 20px;
+            color: #555;
+            line-height: 1.5;
+        }
+
+        .menu-card a {
+    margin-top: auto;
+    padding: 12px 17px;
+    color: white;
+    background: linear-gradient(135deg, #0068d9, #003f87);
+    border-radius: 10px;
+    text-align: center;
+    text-decoration: none;
+    font-weight: bold;
+    box-shadow: 0 5px 12px rgba(0, 87, 184, 0.25);
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+        .menu-card a:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 18px rgba(0, 87, 184, 0.38);
+}
+
+        @media (max-width: 750px) {
+
+    .dashboard {
+        width: 92%;
+        margin: 28px auto;
+    }
+
+    .dashboard-titulo {
+        font-size: 27px;
+    }
+
+    .dashboard-subtitulo {
+        margin-bottom: 25px;
+        font-size: 14px;
+    }
+
+    .indicadores {
+        grid-template-columns: 1fr;
+    }
+
+    .indicador {
+        padding: 20px;
+    }
+
+    .dashboard-secao {
+        margin-top: 25px;
+        padding: 19px;
+    }
+
+    .grafico-area {
+        grid-template-columns: 1fr;
+        gap: 25px;
+    }
+
+    .grafico-rosca {
+        width: 185px;
+        height: 185px;
+    }
+
+    .grafico-rosca::after {
+        inset: 35px;
+    }
+
+    .grafico-centro strong {
+        font-size: 29px;
+    }
+
+    .menu-admin {
+        grid-template-columns: 1fr;
+    }
+
+    .menu-card {
+        min-height: 175px;
+    }
+}
+    </style>
+</head>
+
+<body>
+
+<div th:replace="~{fragments/cabecalho-admin :: cabecalho}">
+</div>
+
+<main class="dashboard">
+
+    <h1 class="dashboard-titulo">
+        Painel Administrativo
+    </h1>
+
+    <p class="dashboard-subtitulo">
+        Visão geral e gerenciamento do Leilão Games
+    </p>
+
+    <section class="indicadores">
+
+        <article class="indicador"
+                 style="--cor:#0057b8;">
+
+            <i class="indicador-icone fa-solid fa-users"></i>
+
+            <h2 th:text="${totalUsuarios}">0</h2>
+
+            <p>Usuários cadastrados</p>
+
+        </article>
+
+        <article class="indicador"
+                 style="--cor:#7b1fa2;">
+
+            <span class="indicador-icone">🎮</span>
+
+            <h2 th:text="${totalProdutos}">0</h2>
+
+            <p>Produtos anunciados</p>
+
+        </article>
+
+        <article class="indicador"
+                 style="--cor:#00a651;">
+
+            <i class="indicador-icone fa-solid fa-circle-play"></i>
+
+            <h2 th:text="${produtosAtivos}">0</h2>
+
+            <p>Leilões ativos</p>
+
+        </article>
+
+        <article class="indicador"
+                 style="--cor:#d90429;">
+
+            <i class="indicador-icone fa-solid fa-flag-checkered"></i>
+
+            <h2 th:text="${produtosEncerrados}">0</h2>
+
+            <p>Leilões encerrados</p>
+
+        </article>
+
+        <article class="indicador"
+                 style="--cor:#e08b00;">
+
+            <i class="indicador-icone fa-solid fa-gavel"></i>
+
+            <h2 th:text="${totalLances}">0</h2>
+
+            <p>Lances realizados</p>
+
+        </article>
+
+        <article class="indicador"
+                 style="--cor:#00838f;">
+
+            <i class="indicador-icone fa-solid fa-tags"></i>
+
+            <h2 th:text="${totalCategorias}">0</h2>
+
+            <p>Categorias cadastradas</p>
+
+        </article>
+
+        <article class="indicador"
+                 style="--cor:#c2185b;">
+
+            <i class="indicador-icone fa-solid fa-star"></i>
+
+            <h2 th:text="${totalAvaliacoes}">0</h2>
+
+            <p>Avaliações publicadas</p>
+
+        </article>
+
+    </section>
+
+    <section class="dashboard-secao">
+
+        <h2>Situação dos leilões</h2>
+
+        <div class="grafico-area"
+             th:with="percentualAtivos=${
+                (produtosAtivos + produtosEncerrados) > 0
+                ? (produtosAtivos * 100
+                    / (produtosAtivos + produtosEncerrados))
+                : 0
+             }">
+
+            <div class="grafico-rosca"
+                 th:style="'--percentual: '
+                    + ${percentualAtivos}
+                    + '%;'">
+
+                <div class="grafico-centro">
+
+                    <strong th:text="${totalProdutos}">
+                        0
+                    </strong>
+
+                    <span>Total</span>
+
+                </div>
+
+            </div>
+
+            <div class="grafico-legenda">
+
+                <div class="legenda-item">
+
+                    <span class="legenda-cor"
+                          style="background:#00a651;">
+                    </span>
+
+                    <span>Leilões ativos</span>
+
+                    <strong th:text="${produtosAtivos}">
+                        0
+                    </strong>
+
+                </div>
+
+                <div class="legenda-item">
+
+                    <span class="legenda-cor"
+                          style="background:#d90429;">
+                    </span>
+
+                    <span>Leilões encerrados</span>
+
+                    <strong th:text="${produtosEncerrados}">
+                        0
+                    </strong>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+    <section class="dashboard-secao">
+
+        <h2>Gerenciamento</h2>
+
+        <div class="menu-admin">
+
+            <article class="menu-card">
+
+                <h3>Produtos</h3>
+
+                <p>
+                    Visualizar e remover produtos anunciados.
+                </p>
+
+                <a href="/admin/produtos" data-loading="true">
+                    Gerenciar produtos
+                </a>
+
+            </article>
+
+            <article class="menu-card">
+
+                <h3>Usuários</h3>
+
+                <p>
+                    Consultar e administrar usuários cadastrados.
+                </p>
+
+                <a href="/admin/usuarios" data-loading="true">
+                    Gerenciar usuários
+                </a>
+
+            </article>
+
+            <article class="menu-card">
+
+                <h3>Categorias</h3>
+
+                <p>
+                    Criar, editar e excluir categorias.
+                </p>
+
+                <a href="/admin/categorias" data-loading="true">
+                    Gerenciar categorias
+                </a>
+
+            </article>
+
+            <article class="menu-card">
+
+                <h3>Avaliações</h3>
+
+                <p>
+                    Moderar avaliações e comentários.
+                </p>
+
+                <a href="/admin/avaliacoes" data-loading="true">
+                    Gerenciar avaliações
+                </a>
+
+            </article>
+
+            <article class="menu-card">
+
+                <h3>Relatórios</h3>
+
+                <p>
+                    Consultar os indicadores gerais da plataforma.
+                </p>
+
+                <a href="/admin/relatorios" data-loading="true">
+                    Abrir relatórios
+                </a>
+
+            </article>
+
+            <article class="menu-card">
+
+                <h3>Voltar ao site</h3>
+
+                <p>
+                    Retornar à página inicial da plataforma.
+                </p>
+
+                <a href="/" data-loading="true">
+                    Abrir o site
+                </a>
+
+            </article>
+
+        </div>
+
+    </section>
+
+</main>
+
+</body>
+</html>

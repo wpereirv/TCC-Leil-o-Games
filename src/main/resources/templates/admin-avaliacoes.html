@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="pt-br"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Gerenciar Avaliações - Leilão Games</title>
+
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/admin.css">
+</head>
+
+<body>
+
+<div th:replace="~{fragments/cabecalho-admin :: cabecalho}">
+</div>
+
+<main class="admin-container">
+
+    <h1 class="admin-titulo">
+        Gerenciamento de Avaliações
+    </h1>
+
+    <p class="admin-resumo">
+        Total:
+        <strong th:text="${totalAvaliacoes}">
+            0
+        </strong>
+    </p>
+
+    <section class="admin-card">
+
+        <div class="sem-registros"
+             th:if="${#lists.isEmpty(avaliacoes)}">
+
+            Nenhuma avaliação cadastrada.
+
+        </div>
+
+        <div class="tabela-wrapper"
+             th:if="${!#lists.isEmpty(avaliacoes)}">
+
+            <table class="tabela-admin">
+
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Produto</th>
+                    <th>Comprador</th>
+                    <th>Vendedor</th>
+                    <th>Nota</th>
+                    <th>Comentário</th>
+                    <th>Ação</th>
+                </tr>
+                </thead>
+
+                <tbody>
+
+                <tr th:each="avaliacao : ${avaliacoes}">
+
+                    <td th:text="${avaliacao.id}">
+                        1
+                    </td>
+
+                    <td>
+
+                        <a th:if="${avaliacao.produto != null}"
+                           th:href="@{/produto/{id}
+                                (id=${avaliacao.produto.id})}"
+                           th:text="${avaliacao.produto.nome}">
+                            Produto
+                        </a>
+
+                        <span th:if="${avaliacao.produto == null}">
+                            Produto removido
+                        </span>
+
+                    </td>
+
+                    <td th:text="${avaliacao.comprador != null
+                        ? avaliacao.comprador.nome
+                        : 'Não informado'}">
+                        Comprador
+                    </td>
+
+                    <td th:text="${avaliacao.vendedor != null
+                        ? avaliacao.vendedor.nome
+                        : 'Não informado'}">
+                        Vendedor
+                    </td>
+
+                    <td>
+
+                        <span class="ui-badge ui-badge-amarelo"
+                            th:text="${'★ ' + avaliacao.nota + ' / 5'}">
+                            ★ 5 / 5
+                        </span>
+
+                    </td>
+
+                    <td class="texto-limitado"
+                        th:text="${avaliacao.comentario != null
+                            and !avaliacao.comentario.isBlank()
+                            ? avaliacao.comentario
+                            : 'Sem comentário'}">
+                        Comentário
+                    </td>
+
+                    <td>
+
+                         <form th:action="@{/admin/avaliacoes/excluir/{id}(id=${avaliacao.id})}"
+                                method="post"
+                                data-loading="true"
+                                onsubmit="return confirm('Deseja remover esta avaliação?');">
+
+                            <button class="botao-admin botao-excluir"
+                                type="submit">
+                                    Excluir
+                            </button>
+
+                        </form>
+
+                    </td>
+
+                </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </section>
+
+    <a class="voltar-dashboard"
+       href="/dashboard">
+        ← Voltar ao Painel Administrativo
+    </a>
+
+</main>
+
+</body>
+</html>

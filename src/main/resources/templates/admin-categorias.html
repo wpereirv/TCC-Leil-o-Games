@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="pt-br"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Gerenciar Categorias - Leilão Games</title>
+
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/admin.css">
+</head>
+
+<body>
+
+<div th:replace="~{fragments/cabecalho-admin :: cabecalho}">
+</div>
+
+<main class="admin-container">
+
+    <h1 class="admin-titulo">
+        Gerenciamento de Categorias
+    </h1>
+
+    <p class="admin-resumo">
+        Total:
+        <strong th:text="${#lists.size(categorias)}">
+            0
+        </strong>
+    </p>
+
+    <div class="admin-grid">
+
+        <section class="admin-card">
+
+            <h2 th:text="${categoriaForm.id == null
+                ? 'Nova categoria'
+                : 'Editar categoria'}">
+                Nova categoria
+            </h2>
+
+            <form action="/admin/categorias/salvar"
+                method="post"
+                th:object="${categoriaForm}"
+                data-loading="true">
+
+                <input type="hidden"
+                       th:field="*{id}">
+
+                <div class="campo">
+
+                    <label for="nome">
+                        Nome
+                    </label>
+
+                    <input id="nome"
+                           type="text"
+                           th:field="*{nome}"
+                           maxlength="100"
+                           required>
+
+                </div>
+
+                <div class="campo">
+
+                    <label for="descricao">
+                        Descrição
+                    </label>
+
+                    <textarea id="descricao"
+                              th:field="*{descricao}"
+                              maxlength="500">
+                    </textarea>
+
+                </div>
+
+                <div class="acoes-formulario">
+
+                    <button class="botao-admin botao-salvar"
+                            type="submit">
+                        Salvar
+                    </button>
+
+                    <a class="botao-admin botao-cancelar"
+                       href="/admin/categorias"
+                       th:if="${categoriaForm.id != null}">
+                        Cancelar
+                    </a>
+
+                </div>
+
+            </form>
+
+        </section>
+
+        <section class="admin-card">
+
+            <h2>Categorias cadastradas</h2>
+
+            <div class="sem-registros"
+                 th:if="${#lists.isEmpty(categorias)}">
+
+                Nenhuma categoria cadastrada.
+
+            </div>
+
+            <div class="tabela-wrapper"
+                 th:if="${!#lists.isEmpty(categorias)}">
+
+                <table class="tabela-admin">
+
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nome</th>
+                        <th>Descrição</th>
+                        <th>Ações</th>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+
+                    <tr th:each="categoria : ${categorias}">
+
+                        <td th:text="${categoria.id}">
+                            1
+                        </td>
+
+                        <td th:text="${categoria.nome}">
+                            Jogos
+                        </td>
+
+                        <td class="texto-limitado"
+                            th:text="${categoria.descricao != null
+                                and !categoria.descricao.isBlank()
+                                ? categoria.descricao
+                                : 'Sem descrição'}">
+                            Descrição
+                        </td>
+
+                        <td>
+
+                            <div class="acoes-tabela">
+
+                                <a class="botao-admin botao-editar"
+                                   th:href="@{/admin/categorias/editar/{id}
+                                        (id=${categoria.id})}">
+                                    Editar
+                                </a>
+
+                                <form th:action="@{/admin/categorias/excluir/{id}(id=${categoria.id})}"
+                                    method="post"
+                                    data-loading="true"
+                                    onsubmit="return confirm('Deseja excluir esta categoria?');">
+
+                                    <button class="botao-admin botao-excluir"
+                                            type="submit">
+                                        Excluir
+                                    </button>
+
+                                </form>
+
+                            </div>
+
+                        </td>
+
+                    </tr>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </section>
+
+    </div>
+
+    <a class="voltar-dashboard"
+       href="/dashboard">
+        ← Voltar ao Painel Administrativo
+    </a>
+
+</main>
+
+</body>
+</html>

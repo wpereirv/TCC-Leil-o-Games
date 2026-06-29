@@ -1,0 +1,63 @@
+<header xmlns:th="http://www.thymeleaf.org"
+        th:fragment="cabecalho"
+        class="cabecalho-principal">
+
+    <th:block th:replace="~{fragments/cabecalho-site :: estilosCabecalho}">
+    </th:block>
+
+    <style>
+        .cabecalho-navegacao-admin {
+            gap: 25px;
+        }
+
+        .cabecalho-navegacao-admin a,
+        .cabecalho-navegacao-admin a:visited {
+            font-size: 16px;
+        }
+
+        @media (max-width: 1180px) {
+            .cabecalho-navegacao-admin {
+                gap: 18px;
+            }
+
+            .cabecalho-navegacao-admin a {
+                font-size: 14px;
+            }
+        }
+    </style>
+
+    <div th:replace="~{fragments/cabecalho-site :: marca}">
+    </div>
+
+    <nav class="cabecalho-navegacao cabecalho-navegacao-admin"
+         aria-label="Navegação administrativa">
+
+        <a href="/dashboard">
+            Painel
+        </a>
+
+        <a href="/admin/produtos">
+            Produtos
+        </a>
+
+        <a href="/admin/usuarios">
+            Usuários
+        </a>
+
+        <a href="/admin/categorias">
+            Categorias
+        </a>
+
+        <a href="/admin/avaliacoes">
+            Avaliações
+        </a>
+
+    </nav>
+
+    <div th:replace="~{fragments/usuario-cabecalho :: usuario}">
+    </div>
+
+    <div th:replace="~{fragments/feedback-global :: feedback}">
+    </div>
+
+</header>

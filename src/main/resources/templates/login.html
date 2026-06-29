@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="pt-br"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Login - Leilão Games</title>
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <link rel="stylesheet" href="/css/style.css">
+
+</head>
+
+<body>
+
+<div th:replace="~{fragments/cabecalho-site :: cabecalho}">
+</div>
+
+<main class="auth-pagina">
+
+    <section class="auth-card">
+
+        <div class="auth-icone">
+            <i class="fa-solid fa-right-to-bracket"></i>
+        </div>
+
+        <h1>Acessar conta</h1>
+
+        <p class="auth-subtitulo">
+            Entre para participar dos leilões.
+        </p>
+
+        <form class="auth-form"
+              action="/login"
+              method="post"
+              data-loading="true">
+
+            <label for="email">E-mail</label>
+
+            <input id="email"
+                   type="email"
+                   name="email"
+                   placeholder="seuemail@exemplo.com"
+                   autocomplete="username"
+                   required>
+
+            <label for="senha">Senha</label>
+
+            <input id="senha"
+                   type="password"
+                   name="senha"
+                   placeholder="Digite sua senha"
+                   autocomplete="current-password"
+                   required>
+
+            <button class="btn"
+                    type="submit">
+
+                <i class="fa-solid fa-arrow-right-to-bracket"></i>
+
+                Entrar
+
+            </button>
+
+        </form>
+
+        <p class="auth-link">
+
+            Ainda não possui uma conta?
+
+            <a href="/cadastro"
+               data-loading="true">
+                Cadastre-se
+            </a>
+
+        </p>
+
+    </section>
+
+</main>
+
+<footer>
+    © 2026 Leilão Games
+</footer>
+
+<script th:inline="javascript">
+
+    document.addEventListener("DOMContentLoaded", function () {
+
+        const erro =
+                /*[[${param.erro != null
+                    ? param.erro[0]
+                    : null}]]*/ null;
+
+        const cadastro =
+                /*[[${param.cadastro != null
+                    ? param.cadastro[0]
+                    : null}]]*/ null;
+
+        const logout =
+                /*[[${param.logout != null
+                    ? param.logout[0]
+                    : null}]]*/ null;
+
+        if (erro === "credenciais") {
+            window.UI.toast(
+                "E-mail ou senha inválidos.",
+                "erro"
+            );
+        }
+
+        if (cadastro === "sucesso") {
+            window.UI.toast(
+                "Conta criada com sucesso! Faça seu login.",
+                "sucesso"
+            );
+        }
+
+        if (logout === "sucesso") {
+            window.UI.toast(
+                "Você saiu da sua conta.",
+                "sucesso"
+            );
+        }
+
+    });
+
+</script>
+
+</body>
+</html>

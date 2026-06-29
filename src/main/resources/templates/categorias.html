@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="pt-br"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <title>Categorias - Leilão Games</title>
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+
+    <link href="https://fonts.googleapis.com/css2?family=Audiowide&display=swap"
+          rel="stylesheet">
+
+    <link rel="stylesheet"
+          href="/css/style.css">
+
+</head>
+
+<body>
+
+<div th:replace="~{fragments/cabecalho-site :: cabecalho}">
+</div>
+
+<div class="container">
+
+    <h1>
+
+        Categorias
+
+    </h1>
+
+    <br><br>
+
+    <div class="lista-produtos">
+
+        <div class="produto-card"
+             th:each="categoria : ${categorias}">
+
+            <h2 th:text="${categoria.nome}">
+                Categoria
+            </h2>
+
+            <br>
+
+            <a th:href="@{/categoria/{id}(id=${categoria.id})}">
+
+                <button class="btn">
+
+                    Ver Leilões
+
+                </button>
+
+            </a>
+
+        </div>
+
+    </div>
+
+    <div th:if="${#lists.isEmpty(categorias)}">
+
+        <br><br>
+
+        <h2>
+
+            Nenhuma categoria cadastrada.
+
+        </h2>
+
+    </div>
+
+</div>
+
+<footer>
+
+    © 2026 Leilão Games - Projeto TCC TADS
+
+    <div class="redes">
+
+        <i class="fa-brands fa-facebook"></i>
+
+        <i class="fa-brands fa-instagram"></i>
+
+        <i class="fa-brands fa-discord"></i>
+
+    </div>
+
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="pt-br"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Relatórios - Leilão Games</title>
+
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/admin.css">
+</head>
+
+<body>
+
+<div th:replace="~{fragments/cabecalho-admin :: cabecalho}">
+</div>
+
+<main class="admin-container">
+
+    <h1 class="admin-titulo">
+        Relatórios do Sistema
+    </h1>
+
+    <p class="admin-resumo">
+        Indicadores gerais da plataforma
+    </p>
+
+    <section class="admin-card">
+
+        <div class="tabela-wrapper">
+
+            <table class="tabela-admin">
+
+                <thead>
+                <tr>
+                    <th>Indicador</th>
+                    <th>Quantidade</th>
+                    <th>Acesso</th>
+                </tr>
+                </thead>
+
+                <tbody>
+
+                <tr>
+                    <td>Usuários cadastrados</td>
+
+                    <td th:text="${totalUsuarios}">
+                        0
+                    </td>
+
+                    <td>
+                        <a class="botao-admin botao-visualizar"
+                           href="/admin/usuarios">
+                            Visualizar
+                        </a>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>Produtos anunciados</td>
+
+                    <td th:text="${totalProdutos}">
+                        0
+                    </td>
+
+                    <td>
+                        <a class="botao-admin botao-visualizar"
+                           href="/admin/produtos">
+                            Visualizar
+                        </a>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>Leilões ativos</td>
+
+                    <td th:text="${produtosAtivos}">
+                        0
+                    </td>
+
+                    <td>
+                        <span class="status status-ativo">
+                            Ativos
+                        </span>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>Leilões encerrados</td>
+
+                    <td th:text="${produtosEncerrados}">
+                        0
+                    </td>
+
+                    <td>
+                        <span class="status status-encerrado">
+                            Encerrados
+                        </span>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>Lances realizados</td>
+
+                    <td th:text="${totalLances}">
+                        0
+                    </td>
+
+                    <td>
+                        Informação geral
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>Categorias cadastradas</td>
+
+                    <td th:text="${totalCategorias}">
+                        0
+                    </td>
+
+                    <td>
+                        <a class="botao-admin botao-visualizar"
+                           href="/admin/categorias">
+                            Visualizar
+                        </a>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>Avaliações publicadas</td>
+
+                    <td th:text="${totalAvaliacoes}">
+                        0
+                    </td>
+
+                    <td>
+                        <a class="botao-admin botao-visualizar"
+                           href="/admin/avaliacoes">
+                            Visualizar
+                        </a>
+                    </td>
+                </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </section>
+
+    <a class="voltar-dashboard"
+       href="/dashboard">
+        ← Voltar ao Painel Administrativo
+    </a>
+
+</main>
+
+</body>
+</html>

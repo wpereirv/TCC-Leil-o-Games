@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="pt-br"
+xmlns:th="http://www.thymeleaf.org">
+
+<head>
+
+<meta charset="UTF-8">
+
+<title>Produto - Leilão Games</title>
+
+<link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+
+<link href="https://fonts.googleapis.com/css2?family=Audiowide&display=swap"
+rel="stylesheet">
+
+<link rel="stylesheet" href="/css/style.css">
+
+</head>
+
+<body>
+
+<div th:replace="~{fragments/cabecalho-site :: cabecalho}">
+</div>
+
+
+<div class="produto-detalhe">
+
+<h1 th:text="${produto.nome}"></h1>
+
+<br>
+
+<script th:inline="javascript">
+
+    document.addEventListener("DOMContentLoaded", function () {
+
+        const sucesso =
+                /*[[${param.sucesso != null
+                    ? param.sucesso[0]
+                    : null}]]*/ null;
+
+        const erro =
+                /*[[${param.erro != null
+                    ? param.erro[0]
+                    : null}]]*/ null;
+
+        const mensagensSucesso = {
+            lance: "Lance realizado com sucesso!",
+            avaliacao: "Avaliação enviada com sucesso!"
+        };
+
+        const mensagensErro = {
+            encerrado: "Este leilão já foi encerrado.",
+            vendedor: "O vendedor não pode dar lances no próprio produto.",
+            valorInicial: "O primeiro lance deve ser igual ou maior que o valor inicial.",
+            lanceMenor: "Seu lance deve ser maior que o maior lance atual.",
+            leilaoNaoEncerrado: "O leilão ainda não foi encerrado.",
+            semVencedor: "Este leilão não possui vencedor.",
+            naoVencedor: "Apenas o vencedor pode avaliar o vendedor.",
+            jaAvaliado: "Você já avaliou este vendedor.",
+            avaliacaoVendedor: "O vendedor não pode avaliar a si mesmo."
+        };
+
+        if (sucesso && mensagensSucesso[sucesso]) {
+            window.UI.toast(
+                mensagensSucesso[sucesso],
+                "sucesso"
+            );
+        }
+
+        if (erro && mensagensErro[erro]) {
+            window.UI.toast(
+                mensagensErro[erro],
+                "erro"
+            );
+        }
+
+    });
+
+</script>
+
+<div class="galeria">
+
+<img th:if="${produto.imagem1 != null}"
+     th:src="@{'/uploads/' + ${produto.imagem1}}">
+
+<img th:if="${produto.imagem2 != null}"
+     th:src="@{'/uploads/' + ${produto.imagem2}}">
+
+<img th:if="${produto.imagem3 != null}"
+     th:src="@{'/uploads/' + ${produto.imagem3}}">
+
+</div>
+
+<br>
+
+<h3>
+
+Categoria:
+
+<span th:text="${produto.categoria != null ? produto.categoria.nome : 'Sem categoria'}"></span>
+
+</h3>
+
+<br>
+
+<h3>
+
+Vendedor:
+
+<a th:href="@{/vendedor/{id}(id=${produto.usuario.id})}"
+   style="color:#FFD700;
+          font-weight:bold;
+          text-decoration:none;">
+
+    <span th:text="${produto.usuario.nome}">
+    </span>
+
+</a>
+
+</h3>
+
+<div class="acoes-produto"
+     th:if="${!ehVendedor}">
+
+    <a class="btn"
+       th:href="@{/chat/iniciar/{id}(id=${produto.id})}"
+       data-loading="true">
+
+        <i class="fa-solid fa-comments"></i>
+
+        Conversar com o vendedor
+
+    </a>
+
+</div>
+
+<br>
+
+<p th:text="${produto.descricao}"></p>
+
+<br>
+
+<div class="resumo-valores">
+
+    <div class="valor-card">
+
+        <i class="fa-solid fa-tag"></i>
+
+        <span>Valor inicial</span>
+
+        <strong>
+            R$
+            <span th:text="${#numbers.formatDecimal(
+                produto.valorInicial,
+                1,
+                2
+            )}">
+                0,00
+            </span>
+        </strong>
+
+    </div>
+
+    <div class="valor-card destaque">
+
+        <i class="fa-solid fa-gavel"></i>
+
+        <span>Maior lance atual</span>
+
+        <strong>
+            R$
+            <span th:text="${#numbers.formatDecimal(
+                maiorLance != null ? maiorLance : 0,
+                1,
+                2
+            )}">
+                0,00
+            </span>
+        </strong>
+
+    </div>
+
+</div>
+
+<br>
+
+<div class="lideranca-card"
+     th:if="${historicoLances != null
+         and !#lists.isEmpty(historicoLances)}">
+
+    <i class="fa-solid fa-trophy"></i>
+
+    <span>Liderando o leilão:</span>
+
+    <strong th:text="${historicoLances.get(0).usuario.nome}">
+        Usuário
+    </strong>
+
+</div>
+
+<div class="lideranca-card sem-lances"
+     th:if="${historicoLances == null
+         or #lists.isEmpty(historicoLances)}">
+
+    <i class="fa-solid fa-chart-line"></i>
+
+    <span>Ainda não há lances</span>
+
+</div>
+
+<br>
+
+<div class="contador-leilao"
+     th:if="${produto.encerrado == null
+         or produto.encerrado == false}">
+
+    <i class="fa-solid fa-hourglass-half"></i>
+
+    <div>
+
+        <strong>Encerra em:</strong>
+
+        <span id="contador"></span>
+
+    </div>
+
+</div>
+
+<div th:if="${produto.encerrado != null
+             and produto.encerrado}">
+
+    <div class="painel-encerrado">
+
+        <h2>
+            <i class="fa-solid fa-flag-checkered"></i>
+            Leilão encerrado
+        </h2>
+
+        <p class="linha-informacao">
+
+            <strong>Status:</strong>
+
+            <span th:class="${lanceVencedor != null
+                    ? 'ui-badge ui-badge-verde'
+                    : 'ui-badge ui-badge-cinza'}"
+                  th:text="${lanceVencedor != null
+                    ? 'Produto vendido'
+                    : 'Encerrado sem lances'}">
+                Produto vendido
+            </span>
+
+        </p>
+
+        <div th:if="${lanceVencedor != null}">
+
+            <p class="linha-informacao">
+
+                <strong>
+                    <i class="fa-solid fa-trophy"></i>
+                    Vencedor:
+                </strong>
+
+                <span th:text="${lanceVencedor.usuario.nome}">
+                    Usuário
+                </span>
+
+            </p>
+
+            <p class="linha-informacao">
+
+                <strong>
+                    <i class="fa-solid fa-money-bill-wave"></i>
+                    Valor final:
+                </strong>
+
+                <span>
+                    R$
+                    <span th:text="${#numbers.formatDecimal(
+                        lanceVencedor.valor,
+                        1,
+                        2
+                    )}">
+                        0,00
+                    </span>
+                </span>
+
+            </p>
+
+        </div>
+
+        <p class="linha-informacao">
+
+            <strong>
+                <i class="fa-solid fa-calendar-check"></i>
+                Encerrado em:
+            </strong>
+
+            <span th:text="${#temporals.format(
+                produto.dataFim,
+                'dd/MM/yyyy HH:mm'
+            )}">
+                Data
+            </span>
+
+        </p>
+
+    </div>
+
+</div>
+
+<div class="formulario-card"
+     th:if="${produto.encerrado != null
+         and produto.encerrado
+         and lanceVencedor != null
+         and ehVencedor
+         and !produtoAvaliado}">
+
+         <h2>
+            <i class="fa-solid fa-star"></i>
+                Avaliar vendedor
+        </h2>
+
+    <form action="/avaliar"
+      method="post"
+      data-loading="true">
+
+        <input type="hidden"
+               name="produtoId"
+               th:value="${produto.id}">
+
+        <label>
+
+            Nota
+
+        </label>
+
+        <br>
+
+        <select name="nota">
+
+            <option value="5">★★★★★</option>
+            <option value="4">★★★★☆</option>
+            <option value="3">★★★☆☆</option>
+            <option value="2">★★☆☆☆</option>
+            <option value="1">★☆☆☆☆</option>
+
+        </select>
+
+        <br><br>
+
+        <textarea
+                name="comentario"
+                rows="5"
+                cols="45"
+                placeholder="Escreva sua avaliação...">
+        </textarea>
+
+        <br><br>
+
+    <button class="btn"
+        type="submit">
+
+        <i class="fa-solid fa-paper-plane"></i>
+            Enviar avaliação
+
+    </button>
+
+    </form>
+
+</div>
+
+<div class="aviso-avaliado"
+     th:if="${produto.encerrado != null
+         and produto.encerrado
+         and ehVencedor
+         and produtoAvaliado}">
+
+    <span class="ui-badge ui-badge-verde">
+
+        <i class="fa-solid fa-circle-check"></i>
+
+        Você já avaliou este vendedor
+
+    </span>
+
+</div>
+
+<br>
+
+<div th:if="${!ehVendedor}">
+
+    <form id="formLance"
+      class="formulario-card"
+      th:if="${produto.encerrado == null
+          or produto.encerrado == false}"
+      action="/lance"
+      method="post"
+      data-loading="true">
+
+    <h2>
+        <i class="fa-solid fa-gavel"></i>
+        Faça seu lance
+    </h2>
+
+        <input type="hidden"
+               name="produtoId"
+               th:value="${produto.id}">
+
+        <input type="number"
+                step="0.01"
+                min="0.01"
+                inputmode="decimal"
+                name="valor"
+                placeholder="Digite o valor do seu lance"
+                required>
+
+        <button class="btn"
+        type="submit">
+
+            <i class="fa-solid fa-gavel"></i>
+
+            Confirmar lance
+
+        </button>
+
+    </form>
+
+</div>
+
+<div class="aviso-vendedor"
+     th:if="${ehVendedor
+         and (produto.encerrado == null
+         or produto.encerrado == false)}">
+
+    <i class="fa-solid fa-store"></i>
+
+    <div>
+
+        <strong>Você é o vendedor deste produto</strong>
+
+        <span>
+            Não é permitido dar lances no próprio anúncio.
+        </span>
+
+    </div>
+
+</div>
+
+<br>
+
+<div th:if="${!ehVendedor}">
+
+    <form action="/favoritar"
+      method="post"
+      data-loading="true">
+
+        <input type="hidden"
+               name="produtoId"
+               th:value="${produto.id}">
+
+        <button class="btn"
+                type="submit">
+
+            <i class="fa-solid fa-heart"></i>
+
+            Adicionar aos Favoritos
+
+        </button>
+
+    </form>
+
+</div>
+
+</div>
+
+<br><br>
+
+<section class="produto-secao">
+
+    <h2>
+        <i class="fa-solid fa-clock-rotate-left"></i>
+        Histórico de lances
+    </h2>
+
+    <div class="estado-vazio"
+         th:if="${#lists.isEmpty(historicoLances)}">
+
+        <i class="fa-solid fa-gavel"></i>
+
+        Nenhum lance realizado.
+
+    </div>
+
+    <div class="tabela-responsiva"
+         th:unless="${#lists.isEmpty(historicoLances)}">
+
+        <table class="tabela-publica">
+
+            <thead>
+            <tr>
+                <th>Usuário</th>
+                <th>Valor</th>
+            </tr>
+            </thead>
+
+            <tbody>
+
+            <tr th:each="lance : ${historicoLances}">
+
+                <td th:text="${lance.usuario.nome}">
+                    Usuário
+                </td>
+
+                <td>
+                    R$
+                    <span th:text="${#numbers.formatDecimal(
+                        lance.valor,
+                        1,
+                        2
+                    )}">
+                        0,00
+                    </span>
+                </td>
+
+            </tr>
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</section>
+
+<section class="produto-secao">
+
+    <h2>
+        <i class="fa-solid fa-star"></i>
+        Avaliações do vendedor
+    </h2>
+
+    <div class="estado-vazio"
+         th:if="${#lists.isEmpty(avaliacoes)}">
+
+        <i class="fa-regular fa-star"></i>
+
+        Este vendedor ainda não possui avaliações.
+
+    </div>
+
+    <div class="lista-avaliacoes"
+         th:unless="${#lists.isEmpty(avaliacoes)}">
+
+        <article class="avaliacao-card"
+                 th:each="avaliacao : ${avaliacoes}">
+
+            <div class="avaliacao-cabecalho">
+
+                <strong>
+
+                    <i class="fa-solid fa-user"></i>
+
+                    <span th:text="${avaliacao.comprador != null
+                        ? avaliacao.comprador.nome
+                        : 'Usuário removido'}">
+                        Usuário
+                    </span>
+
+                </strong>
+
+                <span class="ui-badge ui-badge-amarelo">
+
+                    <i class="fa-solid fa-star"></i>
+
+                    <span th:text="${avaliacao.nota}">
+                        5
+                    </span>
+
+                    / 5
+
+                </span>
+
+            </div>
+
+            <p th:text="${avaliacao.comentario != null
+                    and !avaliacao.comentario.isBlank()
+                    ? avaliacao.comentario
+                    : 'Sem comentário.'}">
+                Comentário
+            </p>
+
+        </article>
+
+    </div>
+
+</section>
+
+<footer>
+
+© 2026 Leilão Games - Projeto TCC TADS
+
+<div class="redes">
+
+<i class="fa-brands fa-facebook"></i>
+
+<i class="fa-brands fa-instagram"></i>
+
+<i class="fa-brands fa-discord"></i>
+
+</div>
+
+</footer>
+
+
+<script th:if="${produto.encerrado == null
+        or produto.encerrado == false}"
+        th:inline="javascript">
+
+const dataFim = new Date(
+    /*[[${#temporals.format(
+        produto.dataFim,
+        'yyyy-MM-dd''T''HH:mm:ss'
+    )}]]*/ ""
+);
+
+function atualizarContador() {
+
+    const agora = new Date();
+
+    const diferenca = dataFim - agora;
+
+    if (diferenca <= 0) {
+
+        document.getElementById("contador").innerHTML =
+                "Leilão encerrado";
+
+        location.reload();
+
+        return;
+    }
+
+    const dias =
+            Math.floor(diferenca / (1000 * 60 * 60 * 24));
+
+    const horas =
+            Math.floor((diferenca % (1000 * 60 * 60 * 24))
+                    / (1000 * 60 * 60));
+
+    const minutos =
+            Math.floor((diferenca % (1000 * 60 * 60))
+                    / (1000 * 60));
+
+    const segundos =
+            Math.floor((diferenca % (1000 * 60))
+                    / 1000);
+
+    document.getElementById("contador").innerHTML =
+            dias + " dias "
+            + horas + " horas "
+            + minutos + " minutos "
+            + segundos + " segundos";
+
+}
+
+setInterval(atualizarContador, 1000);
+
+atualizarContador();
+
+</script>
+
+</body>
+</html>

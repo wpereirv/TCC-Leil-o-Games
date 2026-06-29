@@ -82,13 +82,16 @@ rel="stylesheet">
 <div class="galeria">
 
 <img th:if="${produto.imagem1 != null}"
-     th:src="@{'/uploads/' + ${produto.imagem1}}">
+     th:src="${'/uploads/' + produto.imagem1}"
+     alt="Imagem principal do produto">
 
 <img th:if="${produto.imagem2 != null}"
-     th:src="@{'/uploads/' + ${produto.imagem2}}">
+     th:src="${'/uploads/' + produto.imagem2}"
+     alt="Segunda imagem do produto">
 
 <img th:if="${produto.imagem3 != null}"
-     th:src="@{'/uploads/' + ${produto.imagem3}}">
+     th:src="${'/uploads/' + produto.imagem3}"
+     alt="Terceira imagem do produto">
 
 </div>
 

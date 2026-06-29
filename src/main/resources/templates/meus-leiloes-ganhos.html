@@ -40,8 +40,10 @@ xmlns:th="http://www.thymeleaf.org">
              th:each="produto : ${produtos}">
 
             <img
-                    th:if="${produto.imagem1 != null}"
-                    th:src="@{'/uploads/' + ${produto.imagem1}}">
+                th:src="${produto.imagem1 != null
+                ? '/uploads/' + produto.imagem1
+                : '/img/sem-imagem.png'}"
+            alt="Imagem do produto">
 
             <h2
                     th:text="${produto.nome}">

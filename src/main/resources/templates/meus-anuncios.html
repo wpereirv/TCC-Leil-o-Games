@@ -60,9 +60,9 @@
                  th:each="produto : ${produtos}">
 
             <img th:src="${produto.imagem1 != null
-                ? @{'/uploads/' + ${produto.imagem1}}
-                : '/img/sem-imagem.png'}"
-                 alt="Imagem do produto">
+    ? '/uploads/' + produto.imagem1
+    : '/img/sem-imagem.png'}"
+     alt="Imagem do produto">
 
             <span th:class="${produto.encerrado == true
                     ? 'ui-badge ui-badge-vermelho'

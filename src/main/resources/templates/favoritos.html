@@ -35,7 +35,10 @@ xmlns:th="http://www.thymeleaf.org">
              th:each="favorito : ${favoritos}">
 
             <img
-                    th:src="@{'/uploads/' + ${favorito.produto.imagem1}}">
+    th:src="${favorito.produto.imagem1 != null
+        ? '/uploads/' + favorito.produto.imagem1
+        : '/img/sem-imagem.png'}"
+    alt="Imagem do produto">
 
             <h2 th:text="${favorito.produto.nome}">
             </h2>

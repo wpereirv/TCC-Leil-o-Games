@@ -79,23 +79,82 @@ rel="stylesheet">
 
 </script>
 
-<div class="galeria">
+<div class="produto-layout">
 
-<img th:if="${produto.imagem1 != null}"
-     th:src="${'/uploads/' + produto.imagem1}"
-     alt="Imagem principal do produto">
+    <div class="produto-layout-imagens">
 
-<img th:if="${produto.imagem2 != null}"
-     th:src="${'/uploads/' + produto.imagem2}"
-     alt="Segunda imagem do produto">
+<div class="galeria-produto">
 
-<img th:if="${produto.imagem3 != null}"
-     th:src="${'/uploads/' + produto.imagem3}"
-     alt="Terceira imagem do produto">
+    <div class="imagem-principal-container">
+
+        <img id="imagemPrincipal"
+             th:src="${produto.imagem1 != null
+                 ? '/uploads/' + produto.imagem1
+                 : '/img/sem-imagem.jpg'}"
+             alt="Imagem principal do produto">
+
+    </div>
+
+    <div class="miniaturas-produto">
+
+        <button type="button"
+                class="miniatura-produto ativa"
+                onclick="selecionarImagem(this)">
+
+            <img th:src="${produto.imagem1 != null
+                     ? '/uploads/' + produto.imagem1
+                     : '/img/sem-imagem.jpg'}"
+                 alt="Primeira imagem">
+
+        </button>
+
+        <button type="button"
+                class="miniatura-produto"
+                th:if="${produto.imagem2 != null}"
+                onclick="selecionarImagem(this)">
+
+            <img th:src="${'/uploads/' + produto.imagem2}"
+                 alt="Segunda imagem">
+
+        </button>
+
+        <button type="button"
+                class="miniatura-produto"
+                th:if="${produto.imagem3 != null}"
+                onclick="selecionarImagem(this)">
+
+            <img th:src="${'/uploads/' + produto.imagem3}"
+                 alt="Terceira imagem">
+
+        </button>
+
+    </div>
 
 </div>
 
-<br>
+<script>
+    function selecionarImagem(botao) {
+
+        const miniatura = botao.querySelector("img");
+        const imagemPrincipal =
+                document.getElementById("imagemPrincipal");
+
+        imagemPrincipal.src = miniatura.src;
+        imagemPrincipal.alt = miniatura.alt;
+
+        document
+            .querySelectorAll(".miniatura-produto")
+            .forEach(function (item) {
+                item.classList.remove("ativa");
+            });
+
+        botao.classList.add("ativa");
+    }
+</script>
+
+    </div>
+
+    <div class="produto-layout-informacoes">
 
 <h3>
 
@@ -352,11 +411,12 @@ Vendedor:
 
         <br><br>
 
-        <textarea
-                name="comentario"
-                rows="5"
-                cols="45"
-                placeholder="Escreva sua avaliação...">
+       <textarea
+            name="comentario"
+            rows="5"
+            maxlength="1000"
+            required
+            placeholder="Escreva sua avaliação...">
         </textarea>
 
         <br><br>
@@ -472,6 +532,10 @@ Vendedor:
         </button>
 
     </form>
+
+</div>
+
+    </div>
 
 </div>
 

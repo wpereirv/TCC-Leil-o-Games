@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.dao.DataIntegrityViolationException;
 
 @Controller
 public class AvaliacaoController {
@@ -43,12 +44,27 @@ public class AvaliacaoController {
 
         if (comprador == null) {
 
-            return "redirect:/login";
+    return "redirect:/login";
 
-        }
+}
 
-        Produto produto =
-                produtoService.buscarPorId(produtoId);
+if (produtoId == null
+        || nota == null
+        || nota < 1
+        || nota > 5
+        || comentario == null
+        || comentario.isBlank()
+        || comentario.length() > 1000) {
+
+    return "redirect:/produto/"
+            + produtoId
+            + "?erro=avaliacaoInvalida";
+}
+
+comentario = comentario.trim();
+
+Produto produto =
+        produtoService.buscarPorId(produtoId);
 
         if (produto == null) {
 
@@ -106,11 +122,22 @@ public class AvaliacaoController {
 
         avaliacao.setComentario(comentario);
 
-        avaliacaoService.salvar(avaliacao);
+        try {
 
-        produto.setAvaliado(true);
+    avaliacaoService.salvar(avaliacao);
 
-        produtoService.salvar(produto);
+    produto.setAvaliado(true);
+
+    produtoService.salvar(produto);
+
+} 
+        catch (DataIntegrityViolationException
+                | IllegalArgumentException erro) {
+
+        return "redirect:/produto/"
+            + produtoId
+            + "?erro=jaAvaliado";
+}
 
         return "redirect:/produto/" + produtoId
                 + "?sucesso=avaliacao";

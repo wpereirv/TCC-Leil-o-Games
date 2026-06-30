@@ -39,9 +39,10 @@
         </div>
 
         <form class="form-grade"
-              action="/produto/editar"
-              method="post"
-              data-loading="true">
+            action="/produto/editar"
+            method="post"
+            enctype="multipart/form-data"
+            data-loading="true">
 
             <input type="hidden"
                    name="id"
@@ -107,6 +108,83 @@
                 </textarea>
 
             </div>
+
+            <div class="campo campo-largo">
+
+    <div class="imagens-edicao">
+
+        <div class="imagem-edicao-item">
+
+            <img th:if="${produto.imagem1 != null}"
+                 th:src="${'/uploads/' + produto.imagem1}"
+                 alt="Imagem 1">
+
+            <div class="imagem-edicao-vazia"
+                 th:unless="${produto.imagem1 != null}">
+                Imagem 1
+            </div>
+
+            <input type="file"
+                   name="foto1"
+                   accept="image/jpeg,image/png">
+
+            <label th:if="${produto.imagem1 != null}">
+                <input type="checkbox"
+                       name="removerImagem1">
+                Remover
+            </label>
+
+        </div>
+
+        <div class="imagem-edicao-item">
+
+            <img th:if="${produto.imagem2 != null}"
+                 th:src="${'/uploads/' + produto.imagem2}"
+                 alt="Imagem 2">
+
+            <div class="imagem-edicao-vazia"
+                 th:unless="${produto.imagem2 != null}">
+                Imagem 2
+            </div>
+
+            <input type="file"
+                   name="foto2"
+                   accept="image/jpeg,image/png">
+
+            <label th:if="${produto.imagem2 != null}">
+                <input type="checkbox"
+                       name="removerImagem2">
+                Remover
+            </label>
+
+        </div>
+
+        <div class="imagem-edicao-item">
+
+            <img th:if="${produto.imagem3 != null}"
+                 th:src="${'/uploads/' + produto.imagem3}"
+                 alt="Imagem 3">
+
+            <div class="imagem-edicao-vazia"
+                 th:unless="${produto.imagem3 != null}">
+                Imagem 3
+            </div>
+
+            <input type="file"
+                   name="foto3"
+                   accept="image/jpeg,image/png">
+
+            <label th:if="${produto.imagem3 != null}">
+                <input type="checkbox"
+                       name="removerImagem3">
+                Remover
+            </label>
+
+        </div>
+
+    </div>
+
+</div>
 
             <div class="form-acoes campo-largo">
 

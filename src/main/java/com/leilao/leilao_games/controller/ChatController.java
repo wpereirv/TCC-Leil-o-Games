@@ -182,78 +182,101 @@ public String listarConversas(
     }
 
     @PostMapping("/chat/enviar")
-    public String enviarMensagem(
-            @RequestParam Long conversaId,
-            @RequestParam String texto,
-            HttpSession session) {
+public String enviarMensagem(
+        @RequestParam Long conversaId,
+        @RequestParam String texto,
+        HttpSession session) {
 
-        Usuario usuarioLogado =
-                (Usuario) session.getAttribute("usuarioLogado");
+    Usuario usuarioLogado =
+            (Usuario) session.getAttribute(
+                    "usuarioLogado"
+            );
 
-        if (usuarioLogado == null) {
-            return "redirect:/login";
-        }
+    if (usuarioLogado == null) {
+        return "redirect:/login";
+    }
 
-        Conversa conversa =
-                conversaService.buscarPorId(conversaId);
+    Conversa conversa =
+            conversaService.buscarPorId(
+                    conversaId
+            );
 
-        if (conversa == null
-                || !participaDaConversa(
-                        conversa,
-                        usuarioLogado)) {
+    if (conversa == null
+            || !participaDaConversa(
+                    conversa,
+                    usuarioLogado
+            )) {
 
-            return "redirect:/";
-        }
+        return "redirect:/";
+    }
 
-        if (texto != null && !texto.isBlank()) {
-
-            Mensagem mensagem = new Mensagem();
-
-            mensagem.setConversa(conversa);
-            mensagem.setRemetente(usuarioLogado);
-            mensagem.setTexto(texto.trim());
-
-            mensagemService.salvar(mensagem);
-
-        Usuario destinatario;
-
-        if (conversa.getComprador()
-        .getId()
-        .equals(usuarioLogado.getId())) {
-
-    destinatario = conversa.getVendedor();
-
-        } else {
-
-    destinatario = conversa.getComprador();
-        }
-
-        notificacaoService.criar(
-        destinatario,
-        "MENSAGEM",
-        "Você recebeu uma nova mensagem de "
-                + usuarioLogado.getNome()
-                + ".",
-        "/chat/" + conversaId
-        );
-}
+    if (texto == null) {
         return "redirect:/chat/" + conversaId;
     }
 
-    private boolean participaDaConversa(
-            Conversa conversa,
-            Usuario usuario) {
+    String textoLimpo = texto.trim();
 
-        Long usuarioId = usuario.getId();
+    if (textoLimpo.isEmpty()
+            || textoLimpo.length() > 2000) {
 
-        return conversa.getComprador() != null
-                && conversa.getComprador()
-                        .getId()
-                        .equals(usuarioId)
-
-                || conversa.getVendedor() != null
-                && conversa.getVendedor()
-                        .getId()
-                        .equals(usuarioId);
+        return "redirect:/chat/" + conversaId;
     }
+
+    Mensagem mensagem = new Mensagem();
+
+    mensagem.setConversa(conversa);
+    mensagem.setRemetente(usuarioLogado);
+    mensagem.setTexto(textoLimpo);
+
+    mensagemService.salvar(mensagem);
+
+    Usuario destinatario;
+
+    if (conversa.getComprador()
+            .getId()
+            .equals(usuarioLogado.getId())) {
+
+        destinatario =
+                conversa.getVendedor();
+
+    } else {
+
+        destinatario =
+                conversa.getComprador();
+    }
+
+    if (destinatario != null) {
+
+        notificacaoService.criar(
+                destinatario,
+                "MENSAGEM",
+                "Você recebeu uma nova mensagem de "
+                        + usuarioLogado.getNome()
+                        + ".",
+                "/chat/" + conversaId
+        );
+    }
+
+    return "redirect:/chat/" + conversaId;
+}
+
+private boolean participaDaConversa(
+        Conversa conversa,
+        Usuario usuario) {
+
+    Long usuarioId = usuario.getId();
+
+    return (
+            conversa.getComprador() != null
+            && conversa.getComprador()
+                    .getId()
+                    .equals(usuarioId)
+    ) || (
+            conversa.getVendedor() != null
+            && conversa.getVendedor()
+                    .getId()
+                    .equals(usuarioId)
+    );
+}
+
 }

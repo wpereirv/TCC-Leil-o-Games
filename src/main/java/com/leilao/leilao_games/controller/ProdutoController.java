@@ -8,6 +8,7 @@ import com.leilao.leilao_games.service.FavoritoService;
 import com.leilao.leilao_games.service.LanceService;
 import com.leilao.leilao_games.service.ProdutoService;
 import com.leilao.leilao_games.service.CategoriaService;
+import com.leilao.leilao_games.service.ImagemService;
 
 import jakarta.servlet.http.HttpSession;
 
@@ -23,9 +24,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.LocalDateTime;
 
 @Controller
@@ -46,84 +44,117 @@ public class ProdutoController {
     @Autowired
     private CategoriaService categoriaService;
 
+    @Autowired
+    private ImagemService imagemService;
+
     @PostMapping("/anunciar")
-    public String salvarProduto(
-            Produto produto,
+public String salvarProduto(
+        Produto produto,
 
-            @RequestParam("foto1") MultipartFile foto1,
+        @RequestParam(
+                value = "foto1",
+                required = false
+        )
+        MultipartFile foto1,
 
-            @RequestParam("foto2") MultipartFile foto2,
+        @RequestParam(
+                value = "foto2",
+                required = false
+        )
+        MultipartFile foto2,
 
-            @RequestParam("foto3") MultipartFile foto3,
+        @RequestParam(
+                value = "foto3",
+                required = false
+        )
+        MultipartFile foto3,
 
-            @RequestParam Integer diasLeilao,
+        @RequestParam Integer diasLeilao,
 
-            HttpSession session
-    ) throws IOException {
+        HttpSession session
+) {
 
-        Usuario usuario =
-                (Usuario) session.getAttribute("usuarioLogado");
+    Usuario usuario =
+            (Usuario) session.getAttribute(
+                    "usuarioLogado"
+            );
 
-        if (usuario == null) {
-            return "redirect:/login";
-        }
-
-        Path caminhoUploads =
-                Paths.get("src/main/resources/static/uploads");
-
-        if (!Files.exists(caminhoUploads)) {
-            Files.createDirectories(caminhoUploads);
-        }
-
-        if (!foto1.isEmpty()) {
-
-            String nomeFoto1 = foto1.getOriginalFilename();
-
-            foto1.transferTo(caminhoUploads.resolve(nomeFoto1));
-
-            produto.setImagem1(nomeFoto1);
-        }
-
-        if (!foto2.isEmpty()) {
-
-            String nomeFoto2 = foto2.getOriginalFilename();
-
-            foto2.transferTo(caminhoUploads.resolve(nomeFoto2));
-
-            produto.setImagem2(nomeFoto2);
-        }
-
-        if (!foto3.isEmpty()) {
-
-            String nomeFoto3 = foto3.getOriginalFilename();
-
-            foto3.transferTo(caminhoUploads.resolve(nomeFoto3));
-
-            produto.setImagem3(nomeFoto3);
-        }
-
-        if (diasLeilao < 1) {
-            diasLeilao = 1;
-        }
-
-        if (diasLeilao > 5) {
-            diasLeilao = 5;
-        }
-
-        LocalDateTime inicio = LocalDateTime.now();
-
-        produto.setUsuario(usuario);
-
-        produto.setDataInicio(inicio);
-
-        produto.setDataFim(inicio.plusDays(diasLeilao));
-
-        produto.setEncerrado(false);
-
-        produtoService.salvar(produto);
-
-        return "redirect:/minha-conta";
+    if (usuario == null) {
+        return "redirect:/login";
     }
+
+    if (produto.getNome() == null
+            || produto.getNome().isBlank()
+            || produto.getNome().length() > 120
+            || produto.getDescricao() == null
+            || produto.getDescricao().isBlank()
+            || produto.getDescricao().length() > 2000
+            || produto.getCategoria() == null
+            || produto.getCategoria().getId() == null
+            || produto.getValorInicial() == null
+            || !Double.isFinite(
+                    produto.getValorInicial()
+            )
+            || produto.getValorInicial() <= 0
+            || diasLeilao == null) {
+
+        return "redirect:/anunciar?erro=campos";
+    }
+
+    try {
+
+        imagemService.validar(foto1);
+        imagemService.validar(foto2);
+        imagemService.validar(foto3);
+
+        produto.setImagem1(
+                imagemService.salvar(foto1)
+        );
+
+        produto.setImagem2(
+                imagemService.salvar(foto2)
+        );
+
+        produto.setImagem3(
+                imagemService.salvar(foto3)
+        );
+
+    } catch (IOException
+             | IllegalArgumentException erro) {
+
+        return "redirect:/anunciar?erro=imagem";
+    }
+
+    produto.setNome(
+            produto.getNome().trim()
+    );
+
+    produto.setDescricao(
+            produto.getDescricao().trim()
+    );
+
+    if (diasLeilao < 1) {
+        diasLeilao = 1;
+    }
+
+    if (diasLeilao > 5) {
+        diasLeilao = 5;
+    }
+
+    LocalDateTime inicio =
+            LocalDateTime.now();
+
+    produto.setUsuario(usuario);
+    produto.setDataInicio(inicio);
+    produto.setDataFim(
+            inicio.plusDays(diasLeilao)
+    );
+    produto.setEncerrado(false);
+
+    produtoService.salvar(produto);
+
+    return "redirect:/minha-conta";
+}
 
     @GetMapping("/produto/editar/{id}")
     public String editarProduto(
@@ -160,37 +191,187 @@ return "editar-produto";
     }
 
     @PostMapping("/produto/editar")
-    public String salvarEdicao(
-            Produto produto,
-            HttpSession session) {
+public String salvarEdicao(
+        Produto produto,
 
-        Usuario usuario =
-                (Usuario) session.getAttribute("usuarioLogado");
+        @RequestParam(
+                value = "foto1",
+                required = false
+        )
+        MultipartFile foto1,
 
-        if (usuario == null) {
-            return "redirect:/login";
+        @RequestParam(
+                value = "foto2",
+                required = false
+        )
+        MultipartFile foto2,
+
+        @RequestParam(
+                value = "foto3",
+                required = false
+        )
+        MultipartFile foto3,
+
+        @RequestParam(
+                value = "removerImagem1",
+                defaultValue = "false"
+        )
+        boolean removerImagem1,
+
+        @RequestParam(
+                value = "removerImagem2",
+                defaultValue = "false"
+        )
+        boolean removerImagem2,
+
+        @RequestParam(
+                value = "removerImagem3",
+                defaultValue = "false"
+        )
+        boolean removerImagem3,
+
+        HttpSession session) {
+
+    Usuario usuario =
+            (Usuario) session.getAttribute(
+                    "usuarioLogado"
+            );
+
+    if (usuario == null) {
+        return "redirect:/login";
+    }
+
+    if (produto == null
+            || produto.getId() == null) {
+
+        return "redirect:/meus-anuncios";
+    }
+
+    Produto produtoBanco =
+            produtoService.buscarPorId(
+                    produto.getId()
+            );
+
+    if (produtoBanco == null
+            || produtoBanco.getUsuario() == null
+            || !produtoBanco.getUsuario()
+                    .getId()
+                    .equals(usuario.getId())) {
+
+        return "redirect:/meus-anuncios";
+    }
+
+    if (produto.getNome() == null
+            || produto.getNome().isBlank()
+            || produto.getNome().length() > 120
+            || produto.getDescricao() == null
+            || produto.getDescricao().isBlank()
+            || produto.getDescricao().length() > 2000
+            || produto.getCategoria() == null
+            || produto.getCategoria().getId() == null
+            || produto.getValorInicial() == null
+            || !Double.isFinite(
+                    produto.getValorInicial()
+            )
+            || produto.getValorInicial() <= 0) {
+
+        return "redirect:/produto/editar/"
+                + produto.getId()
+                + "?erro=campos";
+    }
+
+    String imagemAntiga1 =
+            produtoBanco.getImagem1();
+
+    String imagemAntiga2 =
+            produtoBanco.getImagem2();
+
+    String imagemAntiga3 =
+            produtoBanco.getImagem3();
+
+    try {
+
+        imagemService.validar(foto1);
+        imagemService.validar(foto2);
+        imagemService.validar(foto3);
+
+        String imagemNova1 =
+                imagemService.salvar(foto1);
+
+        String imagemNova2 =
+                imagemService.salvar(foto2);
+
+        String imagemNova3 =
+                imagemService.salvar(foto3);
+
+        if (imagemNova1 != null) {
+            produtoBanco.setImagem1(imagemNova1);
+        } else if (removerImagem1) {
+            produtoBanco.setImagem1(null);
         }
 
-        Produto produtoBanco =
-                produtoService.buscarPorId(produto.getId());
-
-        if (produtoBanco == null) {
-            return "redirect:/meus-anuncios";
+        if (imagemNova2 != null) {
+            produtoBanco.setImagem2(imagemNova2);
+        } else if (removerImagem2) {
+            produtoBanco.setImagem2(null);
         }
 
-        if (!produtoBanco.getUsuario().getId().equals(usuario.getId())) {
-            return "redirect:/meus-anuncios";
+        if (imagemNova3 != null) {
+            produtoBanco.setImagem3(imagemNova3);
+        } else if (removerImagem3) {
+            produtoBanco.setImagem3(null);
         }
 
-        produtoBanco.setNome(produto.getNome());
-        produtoBanco.setDescricao(produto.getDescricao());
-        produtoBanco.setValorInicial(produto.getValorInicial());
-        produtoBanco.setCategoria(produto.getCategoria());
+        produtoBanco.setNome(
+                produto.getNome().trim()
+        );
+
+        produtoBanco.setDescricao(
+                produto.getDescricao().trim()
+        );
+
+        produtoBanco.setValorInicial(
+                produto.getValorInicial()
+        );
+
+        produtoBanco.setCategoria(
+                produto.getCategoria()
+        );
 
         produtoService.salvar(produtoBanco);
 
-        return "redirect:/produto/" + produtoBanco.getId();
+        if ((imagemNova1 != null
+                || removerImagem1)
+                && imagemAntiga1 != null) {
+
+            imagemService.remover(imagemAntiga1);
+        }
+
+        if ((imagemNova2 != null
+                || removerImagem2)
+                && imagemAntiga2 != null) {
+
+            imagemService.remover(imagemAntiga2);
+        }
+
+        if ((imagemNova3 != null
+                || removerImagem3)
+                && imagemAntiga3 != null) {
+
+            imagemService.remover(imagemAntiga3);
+        }
+
+    } catch (IOException
+             | IllegalArgumentException erro) {
+
+        return "redirect:/produto/editar/"
+                + produto.getId()
+                + "?erro=imagem";
     }
+
+    return "redirect:/produto/"
+            + produtoBanco.getId();
+}
 
     @PostMapping("/produto/excluir/{id}")
 public String excluirProduto(

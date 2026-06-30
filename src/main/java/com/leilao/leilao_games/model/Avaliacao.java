@@ -3,15 +3,25 @@ package com.leilao.leilao_games.model;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "avaliacoes")
+@Table(
+        name = "avaliacoes",
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        name = "uk_avaliacao_produto",
+                        columnNames = "produto_id"
+                )
+        }
+)
 public class Avaliacao {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false)
     private Integer nota;
 
+    @Column(nullable = false, length = 1000)
     private String comentario;
 
     @ManyToOne

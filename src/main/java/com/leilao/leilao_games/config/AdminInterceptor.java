@@ -1,6 +1,7 @@
 package com.leilao.leilao_games.config;
 
 import com.leilao.leilao_games.model.Usuario;
+import com.leilao.leilao_games.service.UsuarioService;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -12,6 +13,14 @@ import org.springframework.web.servlet.HandlerInterceptor;
 @Component
 public class AdminInterceptor
         implements HandlerInterceptor {
+
+    private final UsuarioService usuarioService;
+
+    public AdminInterceptor(
+            UsuarioService usuarioService) {
+
+        this.usuarioService = usuarioService;
+    }
 
     @Override
     public boolean preHandle(
@@ -29,12 +38,29 @@ public class AdminInterceptor
             return false;
         }
 
-        Usuario usuario =
+        Usuario usuarioSessao =
                 (Usuario) session.getAttribute(
                         "usuarioLogado"
                 );
 
-        if (usuario == null) {
+        if (usuarioSessao == null
+                || usuarioSessao.getId() == null) {
+
+            session.invalidate();
+
+            response.sendRedirect("/login");
+
+            return false;
+        }
+
+        Usuario usuarioAtual =
+                usuarioService.buscarPorId(
+                        usuarioSessao.getId()
+                );
+
+        if (usuarioAtual == null) {
+
+            session.invalidate();
 
             response.sendRedirect("/login");
 
@@ -42,12 +68,22 @@ public class AdminInterceptor
         }
 
         if (!"ADMIN".equalsIgnoreCase(
-                usuario.getTipo())) {
+                usuarioAtual.getTipo())) {
+
+            session.setAttribute(
+                    "usuarioLogado",
+                    usuarioAtual
+            );
 
             response.sendRedirect("/");
 
             return false;
         }
+
+        session.setAttribute(
+                "usuarioLogado",
+                usuarioAtual
+        );
 
         return true;
     }

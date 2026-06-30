@@ -1,21 +1,41 @@
 package com.leilao.leilao_games.model;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 
 @Entity
-@Table(name = "usuarios")
+@Table(
+        name = "usuarios",
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        name = "uk_usuario_email",
+                        columnNames = "email"
+                )
+        }
+)
 public class Usuario {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(
+            strategy = GenerationType.IDENTITY
+    )
     private Long id;
 
+    @Column(nullable = false, length = 120)
     private String nome;
 
+    @Column(nullable = false, length = 180)
     private String email;
 
+    @Column(nullable = false, length = 60)
     private String senha;
 
+    @Column(nullable = false, length = 20)
     private String tipo;
 
     private Double mediaAvaliacoes = 0.0;
@@ -66,15 +86,21 @@ public class Usuario {
         return mediaAvaliacoes;
     }
 
-    public void setMediaAvaliacoes(Double mediaAvaliacoes) {
-        this.mediaAvaliacoes = mediaAvaliacoes;
+    public void setMediaAvaliacoes(
+            Double mediaAvaliacoes) {
+
+        this.mediaAvaliacoes =
+                mediaAvaliacoes;
     }
 
     public Integer getQuantidadeAvaliacoes() {
         return quantidadeAvaliacoes;
     }
 
-    public void setQuantidadeAvaliacoes(Integer quantidadeAvaliacoes) {
-        this.quantidadeAvaliacoes = quantidadeAvaliacoes;
+    public void setQuantidadeAvaliacoes(
+            Integer quantidadeAvaliacoes) {
+
+        this.quantidadeAvaliacoes =
+                quantidadeAvaliacoes;
     }
 }

@@ -1,10 +1,9 @@
 package com.leilao.leilao_games.controller;
 
-import com.leilao.leilao_games.model.Lance;
 import com.leilao.leilao_games.model.Produto;
 import com.leilao.leilao_games.model.Usuario;
 import com.leilao.leilao_games.service.LanceService;
-import com.leilao.leilao_games.service.ProdutoService;
+import com.leilao.leilao_games.service.NotificacaoService;
 
 import jakarta.servlet.http.HttpSession;
 
@@ -12,7 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import com.leilao.leilao_games.service.NotificacaoService;
 
 @Controller
 public class LanceController {
@@ -21,82 +19,95 @@ public class LanceController {
     private LanceService lanceService;
 
     @Autowired
-    private ProdutoService produtoService;
-
-    @Autowired
     private NotificacaoService notificacaoService;
 
     @PostMapping("/lance")
     public String registrarLance(
-
             @RequestParam Long produtoId,
-
             @RequestParam Double valor,
-
             HttpSession session) {
 
         Usuario usuario =
-                (Usuario) session.getAttribute("usuarioLogado");
+                (Usuario) session.getAttribute(
+                        "usuarioLogado"
+                );
 
         if (usuario == null) {
             return "redirect:/login";
         }
 
-        Produto produto =
-                produtoService.buscarPorId(produtoId);
+        LanceService.Registro registro =
+                lanceService.registrar(
+                        produtoId,
+                        valor,
+                        usuario
+                );
 
-        if (produto == null) {
+        LanceService.Resultado resultado =
+                registro.resultado();
+
+        if (resultado
+                == LanceService.Resultado
+                        .PRODUTO_INEXISTENTE
+                || resultado
+                == LanceService.Resultado
+                        .VALOR_INVALIDO) {
+
             return "redirect:/leiloes";
         }
 
-        if (Boolean.TRUE.equals(produto.getEncerrado())) {
-            return "redirect:/produto/" + produtoId + "?erro=encerrado";
+        if (resultado
+                == LanceService.Resultado
+                        .ENCERRADO) {
+
+            return "redirect:/produto/"
+                    + produtoId
+                    + "?erro=encerrado";
         }
 
-        if (produto.getUsuario().getId().equals(usuario.getId())) {
-            return "redirect:/produto/" + produtoId + "?erro=vendedorLance";
+        if (resultado
+                == LanceService.Resultado
+                        .VENDEDOR) {
+
+            return "redirect:/produto/"
+                    + produtoId
+                    + "?erro=vendedor";
         }
 
-        Double maiorLance =
-                lanceService.buscarMaiorLance(produtoId);
+        if (resultado
+                == LanceService.Resultado
+                        .VALOR_INICIAL) {
 
-        if (maiorLance == null || maiorLance <= 0) {
-
-            if (valor < produto.getValorInicial()) {
-
-                return "redirect:/produto/" + produtoId
-                        + "?erro=valorInicial";
-            }
-
-        } else {
-
-            if (valor <= maiorLance) {
-
-                return "redirect:/produto/" + produtoId
-                        + "?erro=lanceMenor";
-            }
+            return "redirect:/produto/"
+                    + produtoId
+                    + "?erro=valorInicial";
         }
 
-        Lance lance = new Lance();
+        if (resultado
+                == LanceService.Resultado
+                        .LANCE_MENOR) {
 
-        lance.setValor(valor);
-        lance.setProduto(produto);
-        lance.setUsuario(usuario);
+            return "redirect:/produto/"
+                    + produtoId
+                    + "?erro=lanceMenor";
+        }
 
-        lanceService.salvar(lance);
+        Produto produto = registro.produto();
 
-    notificacaoService.criar(
-        produto.getUsuario(),
-        "LANCE",
-        usuario.getNome()
-                + " deu um lance de R$ "
-                + String.format("%.2f", valor)
-                + " no produto "
-                + produto.getNome()
-                + ".",
-        "/produto/" + produtoId
-    );
+        notificacaoService.criar(
+                produto.getUsuario(),
+                "LANCE",
+                usuario.getNome()
+                        + " deu um lance de R$ "
+                        + String.format("%.2f", valor)
+                        + " no produto "
+                        + produto.getNome()
+                        + ".",
+                "/produto/" + produtoId
+        );
 
-    return "redirect:/produto/" + produtoId + "?sucesso=lance";
+        return "redirect:/produto/"
+                + produtoId
+                + "?sucesso=lance";
     }
 }

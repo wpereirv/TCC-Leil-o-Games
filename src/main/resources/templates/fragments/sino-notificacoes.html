@@ -511,10 +511,30 @@ if (formMarcarTodas) {
 }
             atualizarNotificacoes();
 
-            setInterval(
-                atualizarNotificacoes,
-                10000
-            );
+            const tempoReal =
+        new EventSource("/tempo-real");
+
+tempoReal.addEventListener(
+    "notificacao",
+    function (evento) {
+
+        const notificacao =
+                JSON.parse(evento.data);
+
+        atualizarContador(
+            Number(notificacao.naoLidas)
+        );
+
+        atualizarNotificacoes();
+    }
+);
+
+window.addEventListener(
+    "beforeunload",
+    function () {
+        tempoReal.close();
+    }
+);
 
         })();
     </script>

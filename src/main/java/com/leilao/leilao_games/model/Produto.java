@@ -44,6 +44,19 @@ public class Produto {
 
     private Boolean encerrado = false;
 
+    @Enumerated(EnumType.STRING)
+    private StatusNegociacao statusNegociacao;
+
+    private Double valorFinal;
+
+    private String codigoRastreio;
+
+    private LocalDateTime dataPagamento;
+
+    private LocalDateTime dataEnvio;
+
+    private LocalDateTime dataConclusao;    
+
     @OneToMany(mappedBy = "produto")
     private List<Lance> lances;
 
@@ -166,4 +179,60 @@ public class Produto {
     public void setEncerrado(Boolean encerrado) {
         this.encerrado = encerrado;
     }
+
+    public StatusNegociacao getStatusNegociacao() {
+    return statusNegociacao;
+}
+
+public void setStatusNegociacao(
+        StatusNegociacao statusNegociacao) {
+
+    this.statusNegociacao = statusNegociacao;
+}
+
+public Double getValorFinal() {
+    return valorFinal;
+}
+
+public void setValorFinal(Double valorFinal) {
+    this.valorFinal = valorFinal;
+}
+
+public String getCodigoRastreio() {
+    return codigoRastreio;
+}
+
+public void setCodigoRastreio(
+        String codigoRastreio) {
+
+    this.codigoRastreio = codigoRastreio;
+}
+
+public LocalDateTime getDataPagamento() {
+    return dataPagamento;
+}
+
+public void setDataPagamento(
+        LocalDateTime dataPagamento) {
+
+    this.dataPagamento = dataPagamento;
+}
+
+public LocalDateTime getDataEnvio() {
+    return dataEnvio;
+}
+
+public void setDataEnvio(LocalDateTime dataEnvio) {
+    this.dataEnvio = dataEnvio;
+}
+
+public LocalDateTime getDataConclusao() {
+    return dataConclusao;
+}
+
+public void setDataConclusao(
+        LocalDateTime dataConclusao) {
+
+    this.dataConclusao = dataConclusao;
+}
 }

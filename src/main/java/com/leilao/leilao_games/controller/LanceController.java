@@ -4,6 +4,7 @@ import com.leilao.leilao_games.model.Produto;
 import com.leilao.leilao_games.model.Usuario;
 import com.leilao.leilao_games.service.LanceService;
 import com.leilao.leilao_games.service.NotificacaoService;
+import com.leilao.leilao_games.service.TempoRealService;
 
 import jakarta.servlet.http.HttpSession;
 
@@ -11,6 +12,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+
+import java.util.Map;
 
 @Controller
 public class LanceController {
@@ -20,6 +23,9 @@ public class LanceController {
 
     @Autowired
     private NotificacaoService notificacaoService;
+
+    @Autowired
+     private TempoRealService tempoRealService;      
 
     @PostMapping("/lance")
     public String registrarLance(
@@ -105,6 +111,19 @@ public class LanceController {
                         + ".",
                 "/produto/" + produtoId
         );
+
+        tempoRealService.enviarParaProduto(
+        produtoId,
+        "lance",
+        Map.of(
+                "produtoId",
+                produtoId,
+                "valor",
+                valor,
+                "usuario",
+                usuario.getNome()
+        )
+);
 
         return "redirect:/produto/"
                 + produtoId

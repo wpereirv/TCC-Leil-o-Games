@@ -7,6 +7,7 @@ import com.leilao.leilao_games.model.Usuario;
 import com.leilao.leilao_games.service.ConversaService;
 import com.leilao.leilao_games.service.MensagemService;
 import com.leilao.leilao_games.service.ProdutoService;
+import com.leilao.leilao_games.service.TempoRealService;
 
 import jakarta.servlet.http.HttpSession;
 
@@ -23,6 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+
 @Controller
 public class ChatController {
 
@@ -37,6 +39,9 @@ public class ChatController {
 
     @Autowired
     private NotificacaoService notificacaoService;
+
+    @Autowired
+        private TempoRealService tempoRealService;
 
    @GetMapping("/chat")
 public String listarConversas(
@@ -228,9 +233,26 @@ public String enviarMensagem(
     mensagem.setRemetente(usuarioLogado);
     mensagem.setTexto(textoLimpo);
 
-    mensagemService.salvar(mensagem);
+   mensagemService.salvar(mensagem);
 
-    Usuario destinatario;
+tempoRealService.enviarParaConversa(
+        conversaId,
+        "mensagem",
+        Map.of(
+                "id",
+                mensagem.getId(),
+                "texto",
+                mensagem.getTexto(),
+                "remetenteId",
+                usuarioLogado.getId(),
+                "remetenteNome",
+                usuarioLogado.getNome(),
+                "dataHora",
+                mensagem.getDataHoraFormatada()
+        )
+);
+
+Usuario destinatario;
 
     if (conversa.getComprador()
             .getId()

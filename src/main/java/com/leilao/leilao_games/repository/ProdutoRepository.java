@@ -62,4 +62,19 @@ public interface ProdutoRepository
     Optional<Produto> buscarPorIdComBloqueio(
             @Param("id") Long id
     );
+
+    @Query("""
+        select produto
+        from Produto produto
+        where produto.encerrado = true
+        and produto.comprador is not null
+        and (
+            produto.comprador.id = :usuarioId
+            or produto.usuario.id = :usuarioId
+        )
+        order by produto.dataFim desc
+        """)
+List<Produto> buscarNegociacoesDoUsuario(
+        @Param("usuarioId") Long usuarioId
+);
 }

@@ -232,11 +232,12 @@ Vendedor:
 
         <strong>
             R$
-            <span th:text="${#numbers.formatDecimal(
-                maiorLance != null ? maiorLance : 0,
-                1,
-                2
-            )}">
+            <span id="maiorLanceAtual"
+      th:text="${#numbers.formatDecimal(
+          maiorLance != null ? maiorLance : 0,
+          1,
+          2
+      )}">
                 0,00
             </span>
         </strong>
@@ -550,8 +551,11 @@ Vendedor:
         Histórico de lances
     </h2>
 
-    <div class="estado-vazio"
-         th:if="${#lists.isEmpty(historicoLances)}">
+    <div id="historicoVazio"
+     class="estado-vazio"
+     th:style="${#lists.isEmpty(historicoLances)
+         ? ''
+         : 'display:none'}">
 
         <i class="fa-solid fa-gavel"></i>
 
@@ -559,8 +563,11 @@ Vendedor:
 
     </div>
 
-    <div class="tabela-responsiva"
-         th:unless="${#lists.isEmpty(historicoLances)}">
+    <div id="historicoTabela"
+     class="tabela-responsiva"
+     th:style="${#lists.isEmpty(historicoLances)
+         ? 'display:none'
+         : ''}">
 
         <table class="tabela-publica">
 
@@ -571,7 +578,7 @@ Vendedor:
             </tr>
             </thead>
 
-            <tbody>
+           <tbody id="historicoCorpo">
 
             <tr th:each="lance : ${historicoLances}">
 
@@ -733,6 +740,127 @@ function atualizarContador() {
 setInterval(atualizarContador, 1000);
 
 atualizarContador();
+
+</script>
+
+<script th:inline="javascript">
+
+    const produtoTempoRealId =
+            /*[[${produto.id}]]*/ null;
+
+    const conexaoProduto =
+            new EventSource(
+                    "/tempo-real?produtoId="
+                    + produtoTempoRealId
+            );
+
+    conexaoProduto.addEventListener(
+            "lance",
+            function (evento) {
+
+                const dados =
+                        JSON.parse(evento.data);
+
+                const valorFormatado =
+                        Number(dados.valor)
+                                .toLocaleString(
+                                        "pt-BR",
+                                        {
+                                            minimumFractionDigits: 2,
+                                            maximumFractionDigits: 2
+                                        }
+                                );
+
+                const elementoValor =
+                        document.getElementById(
+                                "maiorLanceAtual"
+                        );
+
+                if (elementoValor) {
+                    elementoValor.textContent =
+                            valorFormatado;
+                }
+
+                const historicoVazio =
+                        document.getElementById(
+                                "historicoVazio"
+                        );
+
+                const historicoTabela =
+                        document.getElementById(
+                                "historicoTabela"
+                        );
+
+                const historicoCorpo =
+                        document.getElementById(
+                                "historicoCorpo"
+                        );
+
+                if (historicoVazio) {
+                    historicoVazio.style.display =
+                            "none";
+                }
+
+                if (historicoTabela) {
+                    historicoTabela.style.display =
+                            "";
+                }
+
+                if (historicoCorpo) {
+
+                    const linha =
+                            document.createElement(
+                                    "tr"
+                            );
+
+                    const colunaUsuario =
+                            document.createElement(
+                                    "td"
+                            );
+
+                    const colunaValor =
+                            document.createElement(
+                                    "td"
+                            );
+
+                    colunaUsuario.textContent =
+                            dados.usuario;
+
+                    colunaValor.textContent =
+                            "R$ " + valorFormatado;
+
+                    linha.appendChild(
+                            colunaUsuario
+                    );
+
+                    linha.appendChild(
+                            colunaValor
+                    );
+
+                    historicoCorpo.insertBefore(
+                            linha,
+                            historicoCorpo.firstChild
+                    );
+                }
+
+                if (window.UI
+                        && window.UI.toast) {
+
+                    window.UI.toast(
+                            dados.usuario
+                            + " realizou um novo lance.",
+                            "info"
+                    );
+                }
+            }
+    );
+
+    window.addEventListener(
+            "beforeunload",
+            function () {
+                conexaoProduto.close();
+            }
+    );
 
 </script>
 

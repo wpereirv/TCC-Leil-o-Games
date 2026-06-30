@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="pt-br"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Minhas negociações - Leilão Games</title>
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <link rel="stylesheet"
+          href="/css/style.css">
+
+</head>
+
+<body>
+
+<div th:replace="~{fragments/cabecalho-site :: cabecalho}">
+</div>
+
+<main class="negociacoes-pagina">
+
+    <div class="negociacoes-cabecalho">
+
+        <div>
+
+            <h1>Minhas negociações</h1>
+
+            <p>
+                Acompanhe pagamentos, envios e entregas.
+            </p>
+
+        </div>
+
+        <a href="/minha-conta"
+           class="ui-botao">
+
+            <i class="fa-solid fa-arrow-left"></i>
+
+            Minha conta
+
+        </a>
+
+    </div>
+
+    <div class="ui-toast ui-toast-sucesso"
+         th:if="${param.sucesso != null}">
+
+        Status da negociação atualizado.
+
+    </div>
+
+    <div class="ui-toast ui-toast-erro"
+         th:if="${param.erro != null}">
+
+        Não foi possível atualizar a negociação.
+
+    </div>
+
+    <section class="negociacoes-lista">
+
+        <article class="negociacao-card"
+                 th:each="produto : ${negociacoes}">
+
+            <img class="negociacao-imagem"
+                 th:src="${produto.imagem1 != null
+                    ? '/uploads/' + produto.imagem1
+                    : '/img/sem-imagem.jpg'}"
+                 alt="Imagem do produto">
+
+            <div class="negociacao-conteudo">
+
+                <div class="negociacao-topo">
+
+                    <div>
+
+                        <h2 th:text="${produto.nome}">
+                            Produto
+                        </h2>
+
+                        <span class="negociacao-papel"
+                              th:if="${produto.comprador.id
+                                  == usuarioLogado.id}">
+
+                            <i class="fa-solid fa-trophy"></i>
+                            Você é o comprador
+
+                        </span>
+
+                        <span class="negociacao-papel"
+                              th:if="${produto.usuario.id
+                                  == usuarioLogado.id}">
+
+                            <i class="fa-solid fa-box"></i>
+                            Você é o vendedor
+
+                        </span>
+
+                    </div>
+
+                    <span class="negociacao-status"
+                          th:text="${produto.statusNegociacao.descricao}">
+
+                        Status
+
+                    </span>
+
+                </div>
+
+                <div class="negociacao-informacoes">
+
+                    <p>
+
+                        <strong>Valor final:</strong>
+
+                        R$
+
+                        <span th:text="${#numbers.formatDecimal(
+                            produto.valorFinal,
+                            1,
+                            2
+                        )}">
+                            0,00
+                        </span>
+
+                    </p>
+
+                    <p th:if="${produto.comprador.id
+                            == usuarioLogado.id}">
+
+                        <strong>Vendedor:</strong>
+
+                        <span th:text="${produto.usuario.nome}">
+                            Vendedor
+                        </span>
+
+                    </p>
+
+                    <p th:if="${produto.usuario.id
+                            == usuarioLogado.id}">
+
+                        <strong>Comprador:</strong>
+
+                        <span th:text="${produto.comprador.nome}">
+                            Comprador
+                        </span>
+
+                    </p>
+
+                    <p th:if="${produto.codigoRastreio != null}">
+
+                        <strong>Código de rastreio:</strong>
+
+                        <span th:text="${produto.codigoRastreio}">
+                        </span>
+
+                    </p>
+
+                </div>
+
+                <div class="negociacao-acoes">
+
+                    <form th:if="${produto.comprador.id
+                            == usuarioLogado.id
+                            and produto.statusNegociacao.name()
+                            == 'AGUARDANDO_PAGAMENTO'}"
+                          th:action="@{/negociacoes/{id}/pagamento(
+                            id=${produto.id}
+                          )}"
+                          method="post">
+
+                        <button class="ui-botao"
+                                type="submit">
+
+                            <i class="fa-solid fa-credit-card"></i>
+
+                            Confirmar pagamento
+
+                        </button>
+
+                    </form>
+
+                    <form class="negociacao-form-envio"
+                          th:if="${produto.usuario.id
+                            == usuarioLogado.id
+                            and produto.statusNegociacao.name()
+                            == 'AGUARDANDO_ENVIO'}"
+                          th:action="@{/negociacoes/{id}/envio(
+                            id=${produto.id}
+                          )}"
+                          method="post">
+
+                        <input type="text"
+                               name="codigoRastreio"
+                               maxlength="100"
+                               placeholder="Código de rastreio"
+                               required>
+
+                        <button class="ui-botao"
+                                type="submit">
+
+                            <i class="fa-solid fa-truck"></i>
+
+                            Confirmar envio
+
+                        </button>
+
+                    </form>
+
+                    <form th:if="${produto.comprador.id
+                            == usuarioLogado.id
+                            and produto.statusNegociacao.name()
+                            == 'EM_TRANSPORTE'}"
+                          th:action="@{/negociacoes/{id}/recebimento(
+                            id=${produto.id}
+                          )}"
+                          method="post">
+
+                        <button class="ui-botao"
+                                type="submit">
+
+                            <i class="fa-solid fa-circle-check"></i>
+
+                            Confirmar recebimento
+
+                        </button>
+
+                    </form>
+
+                    <span class="negociacao-concluida"
+                          th:if="${produto.statusNegociacao.name()
+                            == 'CONCLUIDA'}">
+
+                        <i class="fa-solid fa-circle-check"></i>
+
+                        Negociação concluída
+
+                    </span>
+
+                    <a th:href="@{/produto/{id}(
+                            id=${produto.id}
+                       )}"
+                       class="ui-botao ui-botao-secundario">
+
+                        Ver produto
+
+                    </a>
+
+                </div>
+
+            </div>
+
+        </article>
+
+    </section>
+
+    <div class="estado-vazio"
+         th:if="${#lists.isEmpty(negociacoes)}">
+
+        <i class="fa-solid fa-handshake"></i>
+
+        <h2>Nenhuma negociação encontrada</h2>
+
+        <p>
+            As negociações aparecerão depois que um leilão for encerrado.
+        </p>
+
+    </div>
+
+</main>
+
+<footer>
+    © 2026 Leilão Games - Projeto TCC TADS
+</footer>
+
+</body>
+</html>

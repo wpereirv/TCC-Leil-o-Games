@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class NotificacaoService {
@@ -16,23 +17,64 @@ public class NotificacaoService {
     @Autowired
     private NotificacaoRepository notificacaoRepository;
 
+    @Autowired
+        private TempoRealService tempoRealService;
+
     public Notificacao criar(
-            Usuario usuario,
-            String tipo,
-            String mensagem,
-            String link) {
+        Usuario usuario,
+        String tipo,
+        String mensagem,
+        String link) {
 
-        Notificacao notificacao = new Notificacao();
+    Notificacao notificacao =
+            new Notificacao();
 
-        notificacao.setUsuario(usuario);
-        notificacao.setTipo(tipo);
-        notificacao.setMensagem(mensagem);
-        notificacao.setLink(link);
-        notificacao.setDataHora(LocalDateTime.now());
-        notificacao.setLida(false);
+    notificacao.setUsuario(usuario);
+    notificacao.setTipo(tipo);
+    notificacao.setMensagem(mensagem);
+    notificacao.setLink(link);
+    notificacao.setDataHora(
+            LocalDateTime.now()
+    );
+    notificacao.setLida(false);
 
-        return notificacaoRepository.save(notificacao);
+    Notificacao salva =
+            notificacaoRepository.save(
+                    notificacao
+            );
+
+    if (usuario != null
+            && usuario.getId() != null) {
+
+        long naoLidas =
+                contarNaoLidas(
+                        usuario.getId()
+                );
+
+        tempoRealService.enviarParaUsuario(
+                usuario.getId(),
+                "notificacao",
+                Map.of(
+                        "id",
+                        salva.getId(),
+                        "tipo",
+                        tipo != null ? tipo : "",
+                        "mensagem",
+                        mensagem != null
+                                ? mensagem
+                                : "",
+                        "link",
+                        link != null ? link : "",
+                        "dataHora",
+                        salva.getDataHoraFormatada(),
+                        "naoLidas",
+                        naoLidas
+                )
+        );
     }
+
+    return salva;
+}
 
     public List<Notificacao> listarPorUsuario(
             Long usuarioId) {

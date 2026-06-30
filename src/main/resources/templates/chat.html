@@ -200,13 +200,15 @@
 
         <div id="mensagens" class="mensagens">
 
-            <p class="sem-mensagens"
-               th:if="${#lists.isEmpty(mensagens)}">
+            <p id="semMensagens"
+            class="sem-mensagens"
+            th:if="${#lists.isEmpty(mensagens)}">
                 Ainda não existem mensagens. Comece a conversa!
             </p>
 
             <div th:each="mensagem : ${mensagens}"
-                 class="mensagem-linha"
+                class="mensagem-linha"
+                th:attr="data-mensagem-id=${mensagem.id}"
                  th:classappend="${mensagem.remetente.id == usuarioLogado.id}
                     ? 'enviada'
                     : 'recebida'">
@@ -231,18 +233,20 @@
             </div>
         </div>
 
-        <form class="form-mensagem"
-              action="/chat/enviar"
-              method="post">
+        <form id="formMensagem"
+      class="form-mensagem"
+      action="/chat/enviar"
+      method="post">
 
             <input type="hidden"
                    name="conversaId"
                    th:value="${conversa.id}">
 
-            <textarea name="texto"
-                maxlength="2000"
-                placeholder="Digite sua mensagem..."
-                required></textarea>
+            <textarea id="textoMensagem"
+          name="texto"
+          maxlength="2000"
+          placeholder="Digite sua mensagem..."
+          required></textarea>
 
             <button type="submit">
                 Enviar
@@ -258,12 +262,194 @@
 
 </main>
 
-<script>
-    const areaMensagens = document.getElementById("mensagens");
+<script th:inline="javascript">
 
-    if (areaMensagens) {
-        areaMensagens.scrollTop = areaMensagens.scrollHeight;
+    const conversaTempoRealId =
+            /*[[${conversa.id}]]*/ null;
+
+    const usuarioTempoRealId =
+            /*[[${usuarioLogado.id}]]*/ null;
+
+    const areaMensagens =
+            document.getElementById(
+                    "mensagens"
+            );
+
+    const formMensagem =
+            document.getElementById(
+                    "formMensagem"
+            );
+
+    const textoMensagem =
+            document.getElementById(
+                    "textoMensagem"
+            );
+
+    function rolarMensagens() {
+
+        if (areaMensagens) {
+            areaMensagens.scrollTop =
+                    areaMensagens.scrollHeight;
+        }
     }
+
+    function adicionarMensagem(dados) {
+
+        if (!areaMensagens) {
+            return;
+        }
+
+        if (document.querySelector(
+                '[data-mensagem-id="'
+                + dados.id
+                + '"]'
+        )) {
+            return;
+        }
+
+        const semMensagens =
+                document.getElementById(
+                        "semMensagens"
+                );
+
+        if (semMensagens) {
+            semMensagens.remove();
+        }
+
+        const linha =
+                document.createElement("div");
+
+        const balao =
+                document.createElement("div");
+
+        const remetente =
+                document.createElement("strong");
+
+        const texto =
+                document.createElement("p");
+
+        const horario =
+                document.createElement("time");
+
+        const enviada =
+                Number(dados.remetenteId)
+                === Number(usuarioTempoRealId);
+
+        linha.className =
+                "mensagem-linha "
+                + (enviada
+                    ? "enviada"
+                    : "recebida");
+
+        linha.dataset.mensagemId =
+                dados.id;
+
+        balao.className = "balao";
+
+        remetente.textContent =
+                enviada
+                        ? "Você"
+                        : dados.remetenteNome;
+
+        texto.textContent = dados.texto;
+
+        horario.textContent =
+                dados.dataHora;
+
+        balao.appendChild(remetente);
+        balao.appendChild(texto);
+        balao.appendChild(horario);
+
+        linha.appendChild(balao);
+
+        areaMensagens.appendChild(linha);
+
+        rolarMensagens();
+    }
+
+    const conexaoChat =
+            new EventSource(
+                    "/tempo-real?conversaId="
+                    + conversaTempoRealId
+            );
+
+    conexaoChat.addEventListener(
+            "mensagem",
+            function (evento) {
+
+                adicionarMensagem(
+                        JSON.parse(evento.data)
+                );
+            }
+    );
+
+    formMensagem.addEventListener(
+            "submit",
+            async function (evento) {
+
+                evento.preventDefault();
+
+                const textoLimpo =
+                        textoMensagem.value.trim();
+
+                if (!textoLimpo) {
+                    return;
+                }
+
+                const botao =
+                        formMensagem.querySelector(
+                                'button[type="submit"]'
+                        );
+
+                botao.disabled = true;
+
+                try {
+
+                    const resposta =
+                            await fetch(
+                                    formMensagem.action,
+                                    {
+                                        method: "POST",
+                                        body: new FormData(
+                                                formMensagem
+                                        )
+                                    }
+                            );
+
+                    if (!resposta.ok) {
+                        throw new Error();
+                    }
+
+                    textoMensagem.value = "";
+
+                } catch (erro) {
+
+                    if (window.UI
+                            && window.UI.toast) {
+
+                        window.UI.toast(
+                                "Não foi possível enviar a mensagem.",
+                                "erro"
+                        );
+                    }
+
+                } finally {
+
+                    botao.disabled = false;
+                    textoMensagem.focus();
+                }
+            }
+    );
+
+    window.addEventListener(
+            "beforeunload",
+            function () {
+                conexaoChat.close();
+            }
+    );
+
+    rolarMensagens();
+
 </script>
 
 </body>

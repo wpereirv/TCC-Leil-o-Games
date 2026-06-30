@@ -85,14 +85,10 @@ public class LanceService {
                         produto.getDataFim()
                 )) {
 
-            produto.setEncerrado(true);
-
-            produtoRepository.save(produto);
-
             return new Registro(
-                    Resultado.ENCERRADO,
-                    produto
-            );
+        Resultado.ENCERRADO,
+        produto
+);
         }
 
         if (produto.getUsuario() == null

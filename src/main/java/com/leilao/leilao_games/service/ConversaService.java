@@ -61,9 +61,12 @@ public class ConversaService {
                 conversaRepository.findByVendedorId(usuarioId)
         );
 
-        conversas.sort(
-                Comparator.comparing(Conversa::getId).reversed()
-        );
+      conversas.sort(
+        Comparator.comparingLong((Conversa conversa) -> {
+            Long id = conversa.getId();
+            return id == null ? Long.MIN_VALUE : id;
+        }).reversed()
+);
 
         return conversas;
     }

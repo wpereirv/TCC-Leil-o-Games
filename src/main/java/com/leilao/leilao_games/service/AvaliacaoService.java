@@ -162,7 +162,11 @@ public class AvaliacaoService {
                 avaliacoes.stream()
                         .filter(avaliacao ->
                                 avaliacao.getNota() != null)
-                        .mapToInt(Avaliacao::getNota)
+                        .mapToInt(avaliacao ->
+                                java.util.Objects
+                        .requireNonNull(avaliacao.getNota())
+                        .intValue()
+                        )
                         .average()
                         .orElse(0.0);
 

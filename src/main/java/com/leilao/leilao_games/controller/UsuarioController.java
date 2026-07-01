@@ -245,11 +245,7 @@ public String salvarEdicaoPerfil(
         return "redirect:/perfil/editar?erro=emailExistente";
     }
 
-    boolean informouNovaSenha =
-            novaSenha != null
-                    && !novaSenha.isBlank();
-
-    if (informouNovaSenha) {
+    if (novaSenha != null && !novaSenha.isBlank()) {
 
         if (novaSenha.length() < 6
                 || novaSenha.length() > 72

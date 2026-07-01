@@ -10,11 +10,11 @@ import com.leilao.leilao_games.service.LanceService;
 import com.leilao.leilao_games.service.ProdutoService;
 import com.leilao.leilao_games.service.UsuarioService;
 import com.leilao.leilao_games.service.CategoriaService;
-import com.leilao.leilao_games.service.CategoriaService;
+
 
 import jakarta.servlet.http.HttpSession;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,25 +26,15 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.util.List;
 
 @Controller
+@RequiredArgsConstructor
 public class PageController {
 
-    @Autowired
-    private ProdutoService produtoService;
-
-    @Autowired
-    private LanceService lanceService;
-
-    @Autowired
-    private UsuarioService usuarioService;
-
-    @Autowired
-    private FavoritoService favoritoService;
-
-    @Autowired
-    private AvaliacaoService avaliacaoService;
-
-    @Autowired
-    private CategoriaService categoriaService;
+    private final ProdutoService produtoService;
+    private final LanceService lanceService;
+    private final UsuarioService usuarioService;
+    private final FavoritoService favoritoService;
+    private final AvaliacaoService avaliacaoService;
+    private final CategoriaService categoriaService;
 
     @GetMapping("/")
     public String home(

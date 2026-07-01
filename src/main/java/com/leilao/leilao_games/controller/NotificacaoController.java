@@ -7,7 +7,7 @@ import com.leilao.leilao_games.service.NotificacaoService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,10 +18,10 @@ import com.leilao.leilao_games.dto.NotificacaoResumoDTO;
 import java.util.List;
 
 @Controller
+@RequiredArgsConstructor
 public class NotificacaoController {
 
-    @Autowired
-    private NotificacaoService notificacaoService;
+    private final NotificacaoService notificacaoService;
 
     @GetMapping("/notificacoes")
     public String listar(

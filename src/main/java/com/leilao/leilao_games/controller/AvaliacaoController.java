@@ -10,23 +10,19 @@ import com.leilao.leilao_games.service.ProdutoService;
 
 import jakarta.servlet.http.HttpSession;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.dao.DataIntegrityViolationException;
 
 @Controller
+@RequiredArgsConstructor
 public class AvaliacaoController {
 
-    @Autowired
-    private AvaliacaoService avaliacaoService;
-
-    @Autowired
-    private ProdutoService produtoService;
-
-    @Autowired
-    private LanceService lanceService;
+    private final AvaliacaoService avaliacaoService;
+    private final ProdutoService produtoService;
+    private final LanceService lanceService;
 
     @PostMapping("/avaliar")
     public String avaliarVendedor(

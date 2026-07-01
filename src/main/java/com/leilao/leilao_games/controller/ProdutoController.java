@@ -12,7 +12,7 @@ import com.leilao.leilao_games.service.ImagemService;
 
 import jakarta.servlet.http.HttpSession;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,25 +27,15 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 
 @Controller
+@RequiredArgsConstructor
 public class ProdutoController {
 
-    @Autowired
-    private ProdutoService produtoService;
-
-    @Autowired
-    private FavoritoService favoritoService;
-
-    @Autowired
-    private LanceService lanceService;
-
-    @Autowired
-    private AvaliacaoService avaliacaoService;
-
-    @Autowired
-    private CategoriaService categoriaService;
-
-    @Autowired
-    private ImagemService imagemService;
+    private final ProdutoService produtoService;
+    private final FavoritoService favoritoService;
+    private final LanceService lanceService;
+    private final AvaliacaoService avaliacaoService;
+    private final CategoriaService categoriaService;
+    private final ImagemService imagemService;
 
     @PostMapping("/anunciar")
 public String salvarProduto(

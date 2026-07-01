@@ -3,16 +3,16 @@ package com.leilao.leilao_games.service;
 import com.leilao.leilao_games.model.Categoria;
 import com.leilao.leilao_games.repository.CategoriaRepository;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class CategoriaService {
 
-    @Autowired
-    private CategoriaRepository categoriaRepository;
+    private final CategoriaRepository categoriaRepository;
 
     public Categoria salvar(Categoria categoria) {
 

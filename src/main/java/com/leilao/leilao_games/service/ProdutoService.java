@@ -4,7 +4,7 @@ import com.leilao.leilao_games.model.Lance;
 import com.leilao.leilao_games.model.Produto;
 import com.leilao.leilao_games.repository.ProdutoRepository;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import com.leilao.leilao_games.model.StatusNegociacao;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,17 +13,12 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class ProdutoService {
 
-    @Autowired
-    private ProdutoRepository produtoRepository;
-
-    @Autowired
-    private LanceService lanceService;
-
-    @Autowired
-    private NotificacaoService notificacaoService;
-
+    private final ProdutoRepository produtoRepository;
+    private final LanceService lanceService;
+    private final NotificacaoService notificacaoService;
     public Produto salvar(Produto produto) {
         return produtoRepository.save(produto);
     }

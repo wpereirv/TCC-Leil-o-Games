@@ -6,7 +6,7 @@ import com.leilao.leilao_games.service.NotificacaoService;
 
 import jakarta.servlet.http.HttpSession;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -14,10 +14,10 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import java.util.List;
 
 @ControllerAdvice
+@RequiredArgsConstructor
 public class NotificacoesGlobaisController {
 
-    @Autowired
-    private NotificacaoService notificacaoService;
+    private final NotificacaoService notificacaoService;
 
     @ModelAttribute
     public void adicionarDadosGlobais(

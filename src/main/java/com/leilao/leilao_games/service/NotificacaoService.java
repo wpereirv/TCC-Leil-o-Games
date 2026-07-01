@@ -4,7 +4,7 @@ import com.leilao.leilao_games.model.Notificacao;
 import com.leilao.leilao_games.model.Usuario;
 import com.leilao.leilao_games.repository.NotificacaoRepository;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -12,13 +12,11 @@ import java.util.List;
 import java.util.Map;
 
 @Service
+@RequiredArgsConstructor
 public class NotificacaoService {
 
-    @Autowired
-    private NotificacaoRepository notificacaoRepository;
-
-    @Autowired
-        private TempoRealService tempoRealService;
+    private final NotificacaoRepository notificacaoRepository;
+    private final TempoRealService tempoRealService;
 
     public Notificacao criar(
         Usuario usuario,

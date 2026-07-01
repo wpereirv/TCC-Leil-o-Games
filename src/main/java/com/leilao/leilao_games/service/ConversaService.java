@@ -4,7 +4,7 @@ import com.leilao.leilao_games.model.Conversa;
 import com.leilao.leilao_games.model.Produto;
 import com.leilao.leilao_games.model.Usuario;
 import com.leilao.leilao_games.repository.ConversaRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -12,10 +12,10 @@ import java.util.Comparator;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class ConversaService {
 
-    @Autowired
-    private ConversaRepository conversaRepository;
+    private final ConversaRepository conversaRepository;
 
     public Conversa buscarOuCriar(
             Produto produto,

@@ -5,7 +5,7 @@ import com.leilao.leilao_games.model.Produto;
 import com.leilao.leilao_games.model.Usuario;
 import com.leilao.leilao_games.repository.AvaliacaoRepository;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
@@ -13,16 +13,12 @@ import java.util.List;
 import java.util.Set;
 
 @Service
+@RequiredArgsConstructor
 public class AvaliacaoService {
 
-    @Autowired
-    private AvaliacaoRepository avaliacaoRepository;
-
-    @Autowired
-    private UsuarioService usuarioService;
-
-    @Autowired
-    private ProdutoService produtoService;
+    private final AvaliacaoRepository avaliacaoRepository;
+    private final UsuarioService usuarioService;
+    private final ProdutoService produtoService;
 
     public void salvar(Avaliacao avaliacao) {
 

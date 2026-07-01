@@ -8,7 +8,7 @@ import com.leilao.leilao_games.service.TempoRealService;
 
 import jakarta.servlet.http.HttpSession;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -16,16 +16,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import java.util.Map;
 
 @Controller
+@RequiredArgsConstructor
 public class LanceController {
 
-    @Autowired
-    private LanceService lanceService;
-
-    @Autowired
-    private NotificacaoService notificacaoService;
-
-    @Autowired
-     private TempoRealService tempoRealService;      
+    private final LanceService lanceService;
+    private final NotificacaoService notificacaoService;
+    private final TempoRealService tempoRealService;
 
     @PostMapping("/lance")
     public String registrarLance(

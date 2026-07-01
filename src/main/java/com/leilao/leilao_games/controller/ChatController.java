@@ -11,7 +11,7 @@ import com.leilao.leilao_games.service.TempoRealService;
 
 import jakarta.servlet.http.HttpSession;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,22 +26,14 @@ import java.util.Map;
 
 
 @Controller
+@RequiredArgsConstructor
 public class ChatController {
 
-    @Autowired
-    private ConversaService conversaService;
-
-    @Autowired
-    private MensagemService mensagemService;
-
-    @Autowired
-    private ProdutoService produtoService;
-
-    @Autowired
-    private NotificacaoService notificacaoService;
-
-    @Autowired
-        private TempoRealService tempoRealService;
+    private final ConversaService conversaService;
+    private final MensagemService mensagemService;
+    private final ProdutoService produtoService;
+    private final NotificacaoService notificacaoService;
+    private final TempoRealService tempoRealService;
 
    @GetMapping("/chat")
 public String listarConversas(

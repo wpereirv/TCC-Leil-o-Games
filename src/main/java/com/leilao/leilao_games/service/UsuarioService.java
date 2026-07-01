@@ -3,16 +3,16 @@ package com.leilao.leilao_games.service;
 import com.leilao.leilao_games.model.Usuario;
 import com.leilao.leilao_games.repository.UsuarioRepository;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class UsuarioService {
 
-    @Autowired
-    private UsuarioRepository usuarioRepository;
+    private final UsuarioRepository usuarioRepository;
 
     public Usuario salvarUsuario(Usuario usuario) {
         return usuarioRepository.save(usuario);

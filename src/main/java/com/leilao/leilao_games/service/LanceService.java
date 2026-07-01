@@ -6,7 +6,7 @@ import com.leilao.leilao_games.model.Usuario;
 import com.leilao.leilao_games.repository.LanceRepository;
 import com.leilao.leilao_games.repository.ProdutoRepository;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class LanceService {
 
     public enum Resultado {
@@ -32,11 +33,8 @@ public class LanceService {
     ) {
     }
 
-    @Autowired
-    private LanceRepository lanceRepository;
-
-    @Autowired
-    private ProdutoRepository produtoRepository;
+    private final LanceRepository lanceRepository;
+private final ProdutoRepository produtoRepository;
 
     @Transactional
     public Registro registrar(

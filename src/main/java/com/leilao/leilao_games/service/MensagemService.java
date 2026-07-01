@@ -2,17 +2,17 @@ package com.leilao.leilao_games.service;
 
 import com.leilao.leilao_games.model.Mensagem;
 import com.leilao.leilao_games.repository.MensagemRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class MensagemService {
 
-    @Autowired
-    private MensagemRepository mensagemRepository;
+    private final MensagemRepository mensagemRepository;
 
     public Mensagem salvar(Mensagem mensagem) {
 

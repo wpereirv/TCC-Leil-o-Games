@@ -38,6 +38,20 @@
 
         </div>
 
+    <div class="aviso-vendedor"
+        th:if="${possuiLances}">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+
+        <div>
+            <strong>Este anúncio já possui lances.</strong>
+            <span>
+              Nome, categoria e valor inicial não podem mais ser
+              alterados. Você ainda pode atualizar a descrição e as
+               imagens; os participantes serão notificados.
+            </span>
+        </div>
+    </div>
+
         <form class="form-grade"
             action="/produto/editar"
             method="post"
@@ -57,6 +71,7 @@
                        name="nome"
                        th:value="${produto.nome}"
                        maxlength="150"
+                       th:disabled="${possuiLances}"
                        required>
 
             </div>
@@ -67,6 +82,7 @@
 
                 <select id="categoria"
                         name="categoria.id"
+                        th:disabled="${possuiLances}"
                         required>
 
                     <option th:each="categoria : ${categorias}"
@@ -92,6 +108,7 @@
                        inputmode="decimal"
                        name="valorInicial"
                        th:value="${produto.valorInicial}"
+                       th:disabled="${possuiLances}"
                        required>
 
             </div>

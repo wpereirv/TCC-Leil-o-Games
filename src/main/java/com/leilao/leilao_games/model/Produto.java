@@ -3,6 +3,7 @@ package com.leilao.leilao_games.model;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.math.BigDecimal;
 
 @Entity
 @Table(name = "produtos")
@@ -30,7 +31,8 @@ public class Produto {
 
     private String descricao;
 
-    private Double valorInicial;
+    @Column(precision = 12, scale = 2)
+    private BigDecimal valorInicial;
 
     private String imagem1;
 
@@ -47,7 +49,8 @@ public class Produto {
     @Enumerated(EnumType.STRING)
     private StatusNegociacao statusNegociacao;
 
-    private Double valorFinal;
+    @Column(precision = 12, scale = 2)
+    private BigDecimal valorFinal;
 
     private String codigoRastreio;
 
@@ -116,11 +119,11 @@ public class Produto {
         this.descricao = descricao;
     }
 
-    public Double getValorInicial() {
+    public BigDecimal getValorInicial() {
         return valorInicial;
     }
 
-    public void setValorInicial(Double valorInicial) {
+    public void setValorInicial(BigDecimal valorInicial) {
         this.valorInicial = valorInicial;
     }
 
@@ -190,11 +193,11 @@ public void setStatusNegociacao(
     this.statusNegociacao = statusNegociacao;
 }
 
-public Double getValorFinal() {
+public BigDecimal getValorFinal() {
     return valorFinal;
 }
 
-public void setValorFinal(Double valorFinal) {
+public void setValorFinal(BigDecimal valorFinal) {
     this.valorFinal = valorFinal;
 }
 

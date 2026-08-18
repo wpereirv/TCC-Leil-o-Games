@@ -5,6 +5,7 @@ import com.leilao.leilao_games.model.Produto;
 import com.leilao.leilao_games.model.Usuario;
 import com.leilao.leilao_games.repository.LanceRepository;
 import com.leilao.leilao_games.repository.ProdutoRepository;
+import java.math.BigDecimal;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -39,14 +40,14 @@ private final ProdutoRepository produtoRepository;
     @Transactional
     public Registro registrar(
             Long produtoId,
-            Double valor,
+            BigDecimal valor,
             Usuario usuario) {
 
         if (produtoId == null
-                || valor == null
-                || !Double.isFinite(valor)
-                || valor <= 0
-                || usuario == null) {
+        || valor == null
+        || valor.compareTo(BigDecimal.ZERO) <= 0
+        || valor.scale() > 2
+        || usuario == null) {
 
             return new Registro(
                     Resultado.VALOR_INVALIDO,
@@ -109,7 +110,7 @@ private final ProdutoRepository produtoRepository;
         if (maiorLance == null) {
 
             if (produto.getValorInicial() == null
-                    || valor < produto.getValorInicial()) {
+                || valor.compareTo(produto.getValorInicial()) < 0) {
 
                 return new Registro(
                         Resultado.VALOR_INICIAL,
@@ -117,7 +118,7 @@ private final ProdutoRepository produtoRepository;
                 );
             }
 
-        } else if (valor <= maiorLance.getValor()) {
+        } else if (valor.compareTo(maiorLance.getValor()) <= 0) {
 
             return new Registro(
                     Resultado.LANCE_MENOR,
@@ -143,7 +144,7 @@ private final ProdutoRepository produtoRepository;
         lanceRepository.save(lance);
     }
 
-    public Double buscarMaiorLance(Long produtoId) {
+    public BigDecimal buscarMaiorLance(Long produtoId) {
 
         Lance lance =
                 lanceRepository
@@ -152,7 +153,7 @@ private final ProdutoRepository produtoRepository;
                         );
 
         if (lance == null) {
-            return 0.0;
+            return BigDecimal.ZERO;
         }
 
         return lance.getValor();

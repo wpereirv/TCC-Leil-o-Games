@@ -3,12 +3,14 @@ package com.leilao.leilao_games.controller;
 import com.leilao.leilao_games.model.Favorito;
 import com.leilao.leilao_games.model.Produto;
 import com.leilao.leilao_games.model.Usuario;
+import com.leilao.leilao_games.model.Lance;
 import com.leilao.leilao_games.service.AvaliacaoService;
 import com.leilao.leilao_games.service.FavoritoService;
 import com.leilao.leilao_games.service.LanceService;
 import com.leilao.leilao_games.service.ProdutoService;
 import com.leilao.leilao_games.service.CategoriaService;
 import com.leilao.leilao_games.service.ImagemService;
+import com.leilao.leilao_games.service.NotificacaoService;
 
 import jakarta.servlet.http.HttpSession;
 
@@ -22,9 +24,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.math.BigDecimal;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
 @Controller
 @RequiredArgsConstructor
@@ -36,6 +42,7 @@ public class ProdutoController {
     private final AvaliacaoService avaliacaoService;
     private final CategoriaService categoriaService;
     private final ImagemService imagemService;
+    private final NotificacaoService notificacaoService;
 
     @PostMapping("/anunciar")
 public String salvarProduto(
@@ -82,11 +89,9 @@ public String salvarProduto(
             || produto.getCategoria() == null
             || produto.getCategoria().getId() == null
             || produto.getValorInicial() == null
-            || !Double.isFinite(
-                    produto.getValorInicial()
-            )
-            || produto.getValorInicial() <= 0
-            || diasLeilao == null) {
+            || produto.getValorInicial()
+                .compareTo(BigDecimal.ZERO) <= 0
+            || produto.getValorInicial().scale() > 2) {
 
         return "redirect:/anunciar?erro=campos";
     }
@@ -170,6 +175,22 @@ public String salvarProduto(
             return "redirect:/meus-anuncios";
         }
 
+        if (Boolean.TRUE.equals(produto.getEncerrado())) {
+                return "redirect:/produto/"
+                 + produto.getId()
+                 + "?erro=encerrado";
+        }
+
+        boolean possuiLances =
+                !lanceService.buscarPorProduto(
+                produto.getId()
+        ).isEmpty();
+
+        model.addAttribute(
+        "possuiLances",
+        possuiLances
+        );      
+
         model.addAttribute("produto", produto);
 
 model.addAttribute(
@@ -251,19 +272,33 @@ public String salvarEdicao(
         return "redirect:/meus-anuncios";
     }
 
+    if (Boolean.TRUE.equals(produtoBanco.getEncerrado())) {
+    return "redirect:/meus-anuncios?erro=leilaoEncerrado";
+}
+
+        List<Lance> lances =
+        lanceService.buscarPorProduto(produtoBanco.getId());
+
+        boolean possuiLances = !lances.isEmpty();
+
+        if (possuiLances) {
+                produto.setNome(produtoBanco.getNome());
+                produto.setCategoria(produtoBanco.getCategoria());
+                produto.setValorInicial(produtoBanco.getValorInicial());
+}
+
     if (produto.getNome() == null
-            || produto.getNome().isBlank()
-            || produto.getNome().length() > 120
-            || produto.getDescricao() == null
-            || produto.getDescricao().isBlank()
-            || produto.getDescricao().length() > 2000
-            || produto.getCategoria() == null
-            || produto.getCategoria().getId() == null
-            || produto.getValorInicial() == null
-            || !Double.isFinite(
-                    produto.getValorInicial()
-            )
-            || produto.getValorInicial() <= 0) {
+        || produto.getNome().isBlank()
+        || produto.getNome().length() > 120
+        || produto.getDescricao() == null
+        || produto.getDescricao().isBlank()
+        || produto.getDescricao().length() > 2000
+        || produto.getCategoria() == null
+        || produto.getCategoria().getId() == null
+        || produto.getValorInicial() == null
+        || produto.getValorInicial()
+        .compareTo(BigDecimal.ZERO) <= 0
+        || produto.getValorInicial().scale() > 2) {
 
         return "redirect:/produto/editar/"
                 + produto.getId()
@@ -294,6 +329,20 @@ public String salvarEdicao(
         String imagemNova3 =
                 imagemService.salvar(foto3);
 
+        boolean descricaoAlterada =
+        !Objects.equals(
+                produtoBanco.getDescricao(),
+                produto.getDescricao().trim()
+        );
+
+        boolean imagensAlteradas =
+                imagemNova1 != null
+                || imagemNova2 != null
+                || imagemNova3 != null
+                || removerImagem1
+                || removerImagem2
+                || removerImagem3;
+
         if (imagemNova1 != null) {
             produtoBanco.setImagem1(imagemNova1);
         } else if (removerImagem1) {
@@ -312,20 +361,22 @@ public String salvarEdicao(
             produtoBanco.setImagem3(null);
         }
 
-        produtoBanco.setNome(
-                produto.getNome().trim()
+       if (!possuiLances) {
+            produtoBanco.setNome(
+            produto.getNome().trim()
         );
+
+            produtoBanco.setValorInicial(
+            produto.getValorInicial()
+        );
+
+            produtoBanco.setCategoria(
+            produto.getCategoria()
+        );
+        }
 
         produtoBanco.setDescricao(
-                produto.getDescricao().trim()
-        );
-
-        produtoBanco.setValorInicial(
-                produto.getValorInicial()
-        );
-
-        produtoBanco.setCategoria(
-                produto.getCategoria()
+        produto.getDescricao().trim()
         );
 
         produtoService.salvar(produtoBanco);
@@ -350,6 +401,47 @@ public String salvarEdicao(
 
             imagemService.remover(imagemAntiga3);
         }
+
+        if (possuiLances
+        && (descricaoAlterada || imagensAlteradas)) {
+
+    String alteracao;
+
+    if (descricaoAlterada && imagensAlteradas) {
+        alteracao = "a descrição e as imagens";
+    } else if (descricaoAlterada) {
+        alteracao = "a descrição";
+    } else {
+        alteracao = "as imagens";
+    }
+
+    Set<Long> usuariosNotificados =
+            new HashSet<>();
+
+    for (Lance lance : lances) {
+
+        Usuario participante =
+                lance.getUsuario();
+
+        if (participante != null
+                && participante.getId() != null
+                && usuariosNotificados.add(
+                        participante.getId()
+                )) {
+
+            notificacaoService.criar(
+                    participante,
+                    "ANUNCIO_ATUALIZADO",
+                    "O vendedor atualizou "
+                            + alteracao
+                            + " do anúncio \""
+                            + produtoBanco.getNome()
+                            + "\". Consulte os detalhes.",
+                    "/produto/" + produtoBanco.getId()
+            );
+        }
+    }
+}
 
     } catch (IOException
              | IllegalArgumentException erro) {

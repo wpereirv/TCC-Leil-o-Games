@@ -1,6 +1,7 @@
 package com.leilao.leilao_games.model;
 
 import jakarta.persistence.*;
+import java.math.BigDecimal;
 
 @Entity
 @Table(name = "lances")
@@ -10,7 +11,8 @@ public class Lance {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Double valor;
+   @Column(precision = 12, scale = 2, nullable = false)
+    private BigDecimal valor;
 
     @ManyToOne
     @JoinColumn(name = "usuario_id")
@@ -24,11 +26,11 @@ public class Lance {
         return id;
     }
 
-    public Double getValor() {
+    public BigDecimal getValor() {
         return valor;
     }
 
-    public void setValor(Double valor) {
+    public void setValor(BigDecimal valor) {
         this.valor = valor;
     }
 

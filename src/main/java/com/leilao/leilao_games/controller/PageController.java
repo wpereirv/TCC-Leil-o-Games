@@ -10,6 +10,7 @@ import com.leilao.leilao_games.service.LanceService;
 import com.leilao.leilao_games.service.ProdutoService;
 import com.leilao.leilao_games.service.UsuarioService;
 import com.leilao.leilao_games.service.CategoriaService;
+import java.math.BigDecimal;
 
 
 import jakarta.servlet.http.HttpSession;
@@ -214,7 +215,7 @@ public String anunciar(
     Produto produto =
             produtoService.buscarPorId(id);
 
-    Double maiorLance =
+    BigDecimal maiorLance =
             lanceService.buscarMaiorLance(id);
 
     Usuario usuarioLogado =

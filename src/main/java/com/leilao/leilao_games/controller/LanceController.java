@@ -5,6 +5,7 @@ import com.leilao.leilao_games.model.Usuario;
 import com.leilao.leilao_games.service.LanceService;
 import com.leilao.leilao_games.service.NotificacaoService;
 import com.leilao.leilao_games.service.TempoRealService;
+import java.math.BigDecimal;
 
 import jakarta.servlet.http.HttpSession;
 
@@ -26,7 +27,7 @@ public class LanceController {
     @PostMapping("/lance")
     public String registrarLance(
             @RequestParam Long produtoId,
-            @RequestParam Double valor,
+            @RequestParam BigDecimal valor,
             HttpSession session) {
 
         Usuario usuario =

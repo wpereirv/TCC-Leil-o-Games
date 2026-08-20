@@ -29,10 +29,12 @@ public class LanceService {
     }
 
     public record Registro(
-            Resultado resultado,
-            Produto produto
-    ) {
-    }
+        Resultado resultado,
+        Produto produto,
+        Lance lance,
+        Usuario usuarioSuperado
+        ) {
+        }
 
     private final LanceRepository lanceRepository;
 private final ProdutoRepository produtoRepository;
@@ -51,6 +53,8 @@ private final ProdutoRepository produtoRepository;
 
             return new Registro(
                     Resultado.VALOR_INVALIDO,
+                    null,
+                    null,
                     null
             );
         }
@@ -65,6 +69,8 @@ private final ProdutoRepository produtoRepository;
         if (produto == null) {
             return new Registro(
                     Resultado.PRODUTO_INEXISTENTE,
+                    null,
+                    null,
                     null
             );
         }
@@ -75,7 +81,9 @@ private final ProdutoRepository produtoRepository;
 
             return new Registro(
                     Resultado.ENCERRADO,
-                    produto
+                    produto,
+                    null,
+                    null
             );
         }
 
@@ -85,8 +93,10 @@ private final ProdutoRepository produtoRepository;
                 )) {
 
             return new Registro(
-        Resultado.ENCERRADO,
-        produto
+                Resultado.ENCERRADO,
+                produto,
+                null,
+                null
 );
         }
 
@@ -97,7 +107,9 @@ private final ProdutoRepository produtoRepository;
 
             return new Registro(
                     Resultado.VENDEDOR,
-                    produto
+                    produto,
+                    null,
+                    null
             );
         }
 
@@ -114,7 +126,9 @@ private final ProdutoRepository produtoRepository;
 
                 return new Registro(
                         Resultado.VALOR_INICIAL,
-                        produto
+                        produto,
+                        null,
+                        null
                 );
             }
 
@@ -122,7 +136,9 @@ private final ProdutoRepository produtoRepository;
 
             return new Registro(
                     Resultado.LANCE_MENOR,
-                    produto
+                    produto,
+                    null,
+                    null
             );
         }
 
@@ -136,7 +152,11 @@ private final ProdutoRepository produtoRepository;
 
         return new Registro(
                 Resultado.SUCESSO,
-                produto
+                produto,
+                lance,
+                maiorLance != null
+                        ? maiorLance.getUsuario()
+                        : null
         );
     }
 

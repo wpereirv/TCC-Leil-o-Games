@@ -2,6 +2,7 @@ package com.leilao.leilao_games.model;
 
 import jakarta.persistence.*;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "lances")
@@ -14,6 +15,9 @@ public class Lance {
    @Column(precision = 12, scale = 2, nullable = false)
     private BigDecimal valor;
 
+    @Column(updatable = false)
+    private LocalDateTime dataHora;
+
     @ManyToOne
     @JoinColumn(name = "usuario_id")
     private Usuario usuario;
@@ -21,6 +25,13 @@ public class Lance {
     @ManyToOne
     @JoinColumn(name = "produto_id")
     private Produto produto;
+
+    @PrePersist
+    private void definirDataHora() {
+    if (dataHora == null) {
+        dataHora = LocalDateTime.now();
+    }
+    }
 
     public Long getId() {
         return id;
@@ -48,5 +59,13 @@ public class Lance {
 
     public void setProduto(Produto produto) {
         this.produto = produto;
+    }
+
+    public LocalDateTime getDataHora() {
+    return dataHora;
+    }
+
+    public void setDataHora(LocalDateTime dataHora) {
+    this.dataHora = dataHora;
     }
 }

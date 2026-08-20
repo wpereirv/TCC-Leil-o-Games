@@ -1,11 +1,11 @@
 package com.leilao.leilao_games.controller;
 
+import com.leilao.leilao_games.model.Lance;
 import com.leilao.leilao_games.model.Produto;
 import com.leilao.leilao_games.model.Usuario;
 import com.leilao.leilao_games.service.LanceService;
 import com.leilao.leilao_games.service.NotificacaoService;
 import com.leilao.leilao_games.service.TempoRealService;
-import java.math.BigDecimal;
 
 import jakarta.servlet.http.HttpSession;
 
@@ -15,6 +15,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.Map;
+import java.time.format.DateTimeFormatter;
+import java.math.BigDecimal;
+
 
 @Controller
 @RequiredArgsConstructor
@@ -96,6 +99,9 @@ public class LanceController {
         }
 
         Produto produto = registro.produto();
+        Lance lance = registro.lance();
+        Usuario usuarioSuperado =
+                registro.usuarioSuperado();
 
         notificacaoService.criar(
                 produto.getUsuario(),
@@ -109,6 +115,23 @@ public class LanceController {
                 "/produto/" + produtoId
         );
 
+        if (usuarioSuperado != null
+        && usuarioSuperado.getId() != null
+        && !usuarioSuperado.getId()
+                .equals(usuario.getId())) {
+
+        notificacaoService.criar(
+            usuarioSuperado,
+            "LANCE_SUPERADO",
+            "Seu lance no produto \""
+                    + produto.getNome()
+                    + "\" foi superado por um novo lance de R$ "
+                    + String.format("%.2f", valor)
+                    + ".",
+            "/produto/" + produtoId
+    );
+}
+
         tempoRealService.enviarParaProduto(
         produtoId,
         "lance",
@@ -118,7 +141,13 @@ public class LanceController {
                 "valor",
                 valor,
                 "usuario",
-                usuario.getNome()
+                usuario.getNome(),
+                "dataHora",
+                lance.getDataHora().format(
+                        DateTimeFormatter.ofPattern(
+                        "dd/MM/yyyy HH:mm"
+                        )
+                )
         )
 );
 

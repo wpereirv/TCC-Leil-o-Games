@@ -575,6 +575,7 @@ Vendedor:
             <tr>
                 <th>Usuário</th>
                 <th>Valor</th>
+                <th>Data e hora</th>
             </tr>
             </thead>
 
@@ -596,6 +597,18 @@ Vendedor:
                         0,00
                     </span>
                 </td>
+
+                <td th:if="${lance.dataHora != null}"
+                    th:text="${#temporals.format(
+                        lance.dataHora,
+                        'dd/MM/yyyy HH:mm'
+                    )}">
+                    19/08/2026 19:42
+                </td>
+
+<td th:unless="${lance.dataHora != null}">
+    Não informado
+</td>
 
             </tr>
 
@@ -823,11 +836,19 @@ atualizarContador();
                                     "td"
                             );
 
+                    const colunaDataHora =
+                            document.createElement(
+                                    "td"
+                            );
+
                     colunaUsuario.textContent =
                             dados.usuario;
 
                     colunaValor.textContent =
                             "R$ " + valorFormatado;
+
+                    colunaDataHora.textContent =
+                            dados.dataHora || "Não informado";
 
                     linha.appendChild(
                             colunaUsuario
@@ -835,6 +856,10 @@ atualizarContador();
 
                     linha.appendChild(
                             colunaValor
+                    );
+
+                    linha.appendChild(
+                            colunaDataHora
                     );
 
                     historicoCorpo.insertBefore(

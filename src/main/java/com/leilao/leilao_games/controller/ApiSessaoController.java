@@ -6,6 +6,9 @@ import com.leilao.leilao_games.model.Usuario;
 import com.leilao.leilao_games.service.UsuarioService;
 import com.leilao.leilao_games.dto.ProdutoResumoDTO;
 import com.leilao.leilao_games.service.ProdutoService;
+import com.leilao.leilao_games.dto.ResumoContaDTO;
+import com.leilao.leilao_games.service.LanceService;
+import com.leilao.leilao_games.service.FavoritoService;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -34,8 +37,9 @@ import java.util.List;
 public class ApiSessaoController {
 
     private final UsuarioService usuarioService;
-
     private final ProdutoService produtoService;
+    private final LanceService lanceService;
+    private final FavoritoService favoritoService;
 
     private final BCryptPasswordEncoder passwordEncoder =
             new BCryptPasswordEncoder();
@@ -138,6 +142,65 @@ public class ApiSessaoController {
             .toList();
 
     return ResponseEntity.ok(produtos);
+}
+
+        @GetMapping("/resumo")
+public ResponseEntity<?> buscarResumo(
+        HttpServletRequest request) {
+
+    HttpSession session = request.getSession(false);
+
+    if (session == null) {
+        return ResponseEntity
+                .status(401)
+                .body(Map.of(
+                        "erro",
+                        "Usuário não autenticado."
+                ));
+    }
+
+    Usuario usuarioSessao = (Usuario) session.getAttribute(
+            "usuarioLogado"
+    );
+
+    if (usuarioSessao == null) {
+        return ResponseEntity
+                .status(401)
+                .body(Map.of(
+                        "erro",
+                        "Usuário não autenticado."
+                ));
+    }
+
+    Usuario usuario = usuarioService.buscarPorId(
+            usuarioSessao.getId()
+    );
+
+    if (usuario == null) {
+        session.invalidate();
+
+        return ResponseEntity
+                .status(401)
+                .body(Map.of(
+                        "erro",
+                        "Sessão inválida."
+                ));
+    }
+
+    ResumoContaDTO resumo = new ResumoContaDTO(
+            UsuarioDTO.de(usuario),
+            produtoService.contarProdutosUsuario(
+                    usuario.getId()
+            ),
+            lanceService.contarLancesUsuario(
+                    usuario.getId()
+            ),
+            favoritoService.contarFavoritosUsuario(
+                    usuario.getId()
+            )
+    );
+
+    return ResponseEntity.ok(resumo);
 }
     
     @PostMapping("/login")

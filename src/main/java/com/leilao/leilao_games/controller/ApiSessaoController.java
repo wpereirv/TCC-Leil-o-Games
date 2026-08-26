@@ -1,6 +1,7 @@
 package com.leilao.leilao_games.controller;
 
 import com.leilao.leilao_games.dto.LoginRequestDTO;
+import com.leilao.leilao_games.dto.CadastroRequestDTO;
 import com.leilao.leilao_games.dto.UsuarioDTO;
 import com.leilao.leilao_games.model.Usuario;
 import com.leilao.leilao_games.service.UsuarioService;
@@ -23,6 +24,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.dao.DataIntegrityViolationException;
 
 import java.util.Map;
 import java.util.List;
@@ -202,6 +204,84 @@ public ResponseEntity<?> buscarResumo(
 
     return ResponseEntity.ok(resumo);
 }
+
+        @PostMapping("/cadastro")
+    public ResponseEntity<?> cadastrar(
+            @RequestBody CadastroRequestDTO dados) {
+
+        if (dados == null
+                || dados.nome() == null
+                || dados.nome().isBlank()
+                || dados.email() == null
+                || dados.email().isBlank()
+                || dados.senha() == null
+                || dados.senha().isBlank()) {
+
+            return ResponseEntity
+                    .badRequest()
+                    .body(Map.of(
+                            "erro",
+                            "Preencha todos os campos."
+                    ));
+        }
+
+        String nome = dados.nome().trim();
+        String email = dados.email().trim().toLowerCase();
+
+        if (nome.length() > 120
+                || email.length() > 180) {
+
+            return ResponseEntity
+                    .badRequest()
+                    .body(Map.of(
+                            "erro",
+                            "Dados inválidos."
+                    ));
+        }
+
+        if (dados.senha().length() < 6) {
+            return ResponseEntity
+                    .badRequest()
+                    .body(Map.of(
+                            "erro",
+                            "A senha deve possuir pelo menos 6 caracteres."
+                    ));
+        }
+
+        if (usuarioService.buscarPorEmail(email) != null) {
+            return ResponseEntity
+                    .status(409)
+                    .body(Map.of(
+                            "erro",
+                            "Este e-mail já está cadastrado."
+                    ));
+        }
+
+        Usuario usuario = new Usuario();
+
+        usuario.setNome(nome);
+        usuario.setEmail(email);
+        usuario.setTipo("CLIENTE");
+        usuario.setSenha(
+                passwordEncoder.encode(dados.senha())
+        );
+
+        try {
+            usuarioService.salvarUsuario(usuario);
+        } catch (DataIntegrityViolationException erro) {
+            return ResponseEntity
+                    .status(409)
+                    .body(Map.of(
+                            "erro",
+                            "Este e-mail já está cadastrado."
+                    ));
+        }
+
+        return ResponseEntity
+                .status(201)
+                .body(UsuarioDTO.de(usuario));
+    }
+
     
     @PostMapping("/login")
     public ResponseEntity<?> login(

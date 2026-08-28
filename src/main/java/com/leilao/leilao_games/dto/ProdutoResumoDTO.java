@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 public record ProdutoResumoDTO(
         Long id,
         String nome,
+        String descricao,
         Long categoriaId,
         String categoriaNome,
         BigDecimal valorInicial,
@@ -26,6 +27,7 @@ public record ProdutoResumoDTO(
         return new ProdutoResumoDTO(
                 produto.getId(),
                 produto.getNome(),
+                produto.getDescricao(),
                 categoria != null
                         ? categoria.getId()
                         : null,

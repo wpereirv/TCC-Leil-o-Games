@@ -1,6 +1,7 @@
 package com.leilao.leilao_games.repository;
 
 import com.leilao.leilao_games.model.Favorito;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,16 +15,19 @@ public interface FavoritoRepository
 
     boolean existsByUsuarioIdAndProdutoId(
             Long usuarioId,
-            Long produtoId);
+            Long produtoId
+    );
 
+    @Modifying
+    @Transactional
     void deleteByUsuarioIdAndProdutoId(
             Long usuarioId,
-            Long produtoId);
+            Long produtoId
+    );
 
     long countByUsuarioId(Long usuarioId);
 
     @Modifying
     @Transactional
     void deleteByProdutoId(Long produtoId);
-
 }

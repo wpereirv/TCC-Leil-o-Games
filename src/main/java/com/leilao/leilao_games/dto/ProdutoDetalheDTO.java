@@ -21,6 +21,7 @@ public record ProdutoDetalheDTO(
         LocalDateTime dataInicio,
         LocalDateTime dataFim,
         Boolean encerrado,
+        Boolean avaliado,
         Long vendedorId,
         String vendedorNome
 ) {
@@ -29,11 +30,8 @@ public record ProdutoDetalheDTO(
             Produto produto,
             BigDecimal maiorLance) {
 
-        Categoria categoria =
-                produto.getCategoria();
-
-        Usuario vendedor =
-                produto.getUsuario();
+        Categoria categoria = produto.getCategoria();
+        Usuario vendedor = produto.getUsuario();
 
         return new ProdutoDetalheDTO(
                 produto.getId(),
@@ -53,6 +51,7 @@ public record ProdutoDetalheDTO(
                 produto.getDataInicio(),
                 produto.getDataFim(),
                 produto.getEncerrado(),
+                produto.getAvaliado(),
                 vendedor != null
                         ? vendedor.getId()
                         : null,

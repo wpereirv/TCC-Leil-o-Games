@@ -189,6 +189,14 @@ public class ApiLanceController {
                                 "Produto não encontrado."
                         ));
 
+            case DESATIVADO:
+                        return ResponseEntity
+                .status(409)
+                .body(Map.of(
+                        "erro",
+                        "Este leilão está desativado."
+                ));
+
             case ENCERRADO:
                 return ResponseEntity
                         .status(409)

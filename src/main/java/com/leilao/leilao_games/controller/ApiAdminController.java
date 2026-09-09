@@ -92,9 +92,10 @@ public class ApiAdminController {
         return ResponseEntity.ok(usuarios);
     }
 
-    @DeleteMapping("/usuarios/{usuarioId}")
-    public ResponseEntity<?> excluirUsuario(
+    @PutMapping("/usuarios/{usuarioId}/status/{ativo}")
+    public ResponseEntity<?> atualizarStatusUsuario(
             @PathVariable Long usuarioId,
+            @PathVariable boolean ativo,
             HttpServletRequest request) {
 
         Usuario usuarioLogado =
@@ -104,33 +105,35 @@ public class ApiAdminController {
             return naoAutenticado();
         }
 
-        if (usuarioLogado.getId().equals(usuarioId)) {
+        if (!ativo
+                && usuarioLogado.getId().equals(usuarioId)) {
+
             return ResponseEntity.badRequest().body(Map.of(
                     "erro",
-                    "Você não pode excluir a própria conta."
+                    "Você não pode desativar a própria conta."
             ));
         }
 
-        Usuario usuario =
-                usuarioService.buscarPorId(usuarioId);
+        Usuario usuario = usuarioService
+                .buscarPorIdInclusoInativo(usuarioId);
 
         if (usuario == null) {
             return ResponseEntity.notFound().build();
         }
 
-        try {
-            usuarioService.excluir(usuarioId);
+        usuarioService.atualizarStatus(usuarioId, ativo);
 
-            return ResponseEntity.ok(Map.of(
-                    "mensagem",
-                    "Usuário excluído com sucesso."
-            ));
-        } catch (DataIntegrityViolationException erro) {
-            return ResponseEntity.badRequest().body(Map.of(
-                    "erro",
-                    "Este usuário possui informações vinculadas e não pode ser excluído."
-            ));
+        if (!ativo) {
+            produtoService
+                    .desativarLeiloesAtivosDoUsuario(usuarioId);
         }
+
+        return ResponseEntity.ok(Map.of(
+                "mensagem",
+                ativo
+                        ? "Usuário reativado com sucesso."
+                        : "Usuário desativado. Os leilões ativos dele também foram desativados."
+        ));
     }
 
     @GetMapping("/produtos")
@@ -157,40 +160,36 @@ public class ApiAdminController {
         return ResponseEntity.ok(produtos);
     }
 
-    @DeleteMapping("/produtos/{produtoId}")
-    public ResponseEntity<?> excluirProduto(
+    @PutMapping("/produtos/{produtoId}/status/{ativo}")
+    public ResponseEntity<?> atualizarStatusProduto(
             @PathVariable Long produtoId,
+            @PathVariable boolean ativo,
             HttpServletRequest request) {
 
         if (buscarUsuarioLogado(request) == null) {
             return naoAutenticado();
         }
 
-        Produto produto =
-                produtoService.buscarPorId(produtoId);
+        Produto produto = produtoService
+                .buscarPorIdInclusoInativo(produtoId);
 
         if (produto == null) {
             return ResponseEntity.notFound().build();
         }
 
-        if (!lanceService.buscarPorProduto(produtoId).isEmpty()) {
-            return ResponseEntity.badRequest().body(Map.of(
-                    "erro",
-                    "Este produto não pode ser excluído porque possui lances."
-            ));
-        }
-
         try {
-            produtoService.excluir(produtoId);
+            produtoService.atualizarStatus(produtoId, ativo);
 
             return ResponseEntity.ok(Map.of(
                     "mensagem",
-                    "Produto excluído com sucesso."
+                    ativo
+                            ? "Leilão reativado com sucesso."
+                            : "Leilão desativado com sucesso."
             ));
-        } catch (DataIntegrityViolationException erro) {
+        } catch (IllegalStateException erro) {
             return ResponseEntity.badRequest().body(Map.of(
                     "erro",
-                    "O produto possui informações vinculadas e não pode ser excluído."
+                    erro.getMessage()
             ));
         }
     }
@@ -353,9 +352,23 @@ public class ApiAdminController {
             return null;
         }
 
-        return (Usuario) session.getAttribute(
+        Usuario usuarioSessao = (Usuario) session.getAttribute(
                 "usuarioLogado"
         );
+
+        if (usuarioSessao == null) {
+            return null;
+        }
+
+        Usuario usuario = usuarioService.buscarPorId(
+                usuarioSessao.getId()
+        );
+
+        if (usuario == null) {
+            session.invalidate();
+        }
+
+        return usuario;
     }
 
     private ResponseEntity<?> naoAutenticado() {

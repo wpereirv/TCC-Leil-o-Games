@@ -5,12 +5,13 @@ import com.leilao.leilao_games.model.Produto;
 import com.leilao.leilao_games.model.Usuario;
 import com.leilao.leilao_games.repository.LanceRepository;
 import com.leilao.leilao_games.repository.ProdutoRepository;
-import java.math.BigDecimal;
 
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -21,6 +22,7 @@ public class LanceService {
     public enum Resultado {
         SUCESSO,
         PRODUTO_INEXISTENTE,
+        DESATIVADO,
         ENCERRADO,
         VENDEDOR,
         VALOR_INVALIDO,
@@ -29,15 +31,15 @@ public class LanceService {
     }
 
     public record Registro(
-        Resultado resultado,
-        Produto produto,
-        Lance lance,
-        Usuario usuarioSuperado
-        ) {
-        }
+            Resultado resultado,
+            Produto produto,
+            Lance lance,
+            Usuario usuarioSuperado
+    ) {
+    }
 
     private final LanceRepository lanceRepository;
-private final ProdutoRepository produtoRepository;
+    private final ProdutoRepository produtoRepository;
 
     @Transactional
     public Registro registrar(
@@ -46,10 +48,10 @@ private final ProdutoRepository produtoRepository;
             Usuario usuario) {
 
         if (produtoId == null
-        || valor == null
-        || valor.compareTo(BigDecimal.ZERO) <= 0
-        || valor.scale() > 2
-        || usuario == null) {
+                || valor == null
+                || valor.compareTo(BigDecimal.ZERO) <= 0
+                || valor.scale() > 2
+                || usuario == null) {
 
             return new Registro(
                     Resultado.VALOR_INVALIDO,
@@ -59,12 +61,9 @@ private final ProdutoRepository produtoRepository;
             );
         }
 
-        Produto produto =
-                produtoRepository
-                        .buscarPorIdComBloqueio(
-                                produtoId
-                        )
-                        .orElse(null);
+        Produto produto = produtoRepository
+                .buscarPorIdComBloqueio(produtoId)
+                .orElse(null);
 
         if (produto == null) {
             return new Registro(
@@ -75,10 +74,16 @@ private final ProdutoRepository produtoRepository;
             );
         }
 
-        if (Boolean.TRUE.equals(
-                produto.getEncerrado()
-        )) {
+        if (!Boolean.TRUE.equals(produto.getAtivo())) {
+            return new Registro(
+                    Resultado.DESATIVADO,
+                    produto,
+                    null,
+                    null
+            );
+        }
 
+        if (Boolean.TRUE.equals(produto.getEncerrado())) {
             return new Registro(
                     Resultado.ENCERRADO,
                     produto,
@@ -88,16 +93,15 @@ private final ProdutoRepository produtoRepository;
         }
 
         if (produto.getDataFim() != null
-                && !LocalDateTime.now().isBefore(
-                        produto.getDataFim()
-                )) {
+                && !LocalDateTime.now()
+                        .isBefore(produto.getDataFim())) {
 
             return new Registro(
-                Resultado.ENCERRADO,
-                produto,
-                null,
-                null
-);
+                    Resultado.ENCERRADO,
+                    produto,
+                    null,
+                    null
+            );
         }
 
         if (produto.getUsuario() == null
@@ -113,16 +117,15 @@ private final ProdutoRepository produtoRepository;
             );
         }
 
-        Lance maiorLance =
-                lanceRepository
-                        .findFirstByProdutoIdOrderByValorDesc(
-                                produtoId
-                        );
+        Lance maiorLance = lanceRepository
+                .findFirstByProdutoIdOrderByValorDesc(produtoId);
 
         if (maiorLance == null) {
 
             if (produto.getValorInicial() == null
-                || valor.compareTo(produto.getValorInicial()) < 0) {
+                    || valor.compareTo(
+                            produto.getValorInicial()
+                    ) < 0) {
 
                 return new Registro(
                         Resultado.VALOR_INICIAL,
@@ -132,7 +135,8 @@ private final ProdutoRepository produtoRepository;
                 );
             }
 
-        } else if (valor.compareTo(maiorLance.getValor()) <= 0) {
+        } else if (valor.compareTo(
+                maiorLance.getValor()) <= 0) {
 
             return new Registro(
                     Resultado.LANCE_MENOR,
@@ -166,11 +170,8 @@ private final ProdutoRepository produtoRepository;
 
     public BigDecimal buscarMaiorLance(Long produtoId) {
 
-        Lance lance =
-                lanceRepository
-                        .findFirstByProdutoIdOrderByValorDesc(
-                                produtoId
-                        );
+        Lance lance = lanceRepository
+                .findFirstByProdutoIdOrderByValorDesc(produtoId);
 
         if (lance == null) {
             return BigDecimal.ZERO;
@@ -183,43 +184,25 @@ private final ProdutoRepository produtoRepository;
         return lanceRepository.count();
     }
 
-    public long contarLancesUsuario(
-            Long usuarioId) {
-
-        return lanceRepository
-                .countByUsuarioId(usuarioId);
+    public long contarLancesUsuario(Long usuarioId) {
+        return lanceRepository.countByUsuarioId(usuarioId);
     }
 
-    public List<Lance> buscarPorUsuario(
-            Long usuarioId) {
-
-        return lanceRepository
-                .findByUsuarioId(usuarioId);
+    public List<Lance> buscarPorUsuario(Long usuarioId) {
+        return lanceRepository.findByUsuarioId(usuarioId);
     }
 
-    public List<Lance> buscarPorProduto(
-            Long produtoId) {
-
+    public List<Lance> buscarPorProduto(Long produtoId) {
         return lanceRepository
-                .findByProdutoIdOrderByValorDesc(
-                        produtoId
-                );
+                .findByProdutoIdOrderByValorDesc(produtoId);
     }
 
-    public Lance buscarLanceVencedor(
-            Long produtoId) {
-
+    public Lance buscarLanceVencedor(Long produtoId) {
         return lanceRepository
-                .findFirstByProdutoIdOrderByValorDesc(
-                        produtoId
-                );
+                .findFirstByProdutoIdOrderByValorDesc(produtoId);
     }
 
-    public void removerPorProduto(
-            Long produtoId) {
-
-        lanceRepository.deleteByProdutoId(
-                produtoId
-        );
+    public void removerPorProduto(Long produtoId) {
+        lanceRepository.deleteByProdutoId(produtoId);
     }
 }

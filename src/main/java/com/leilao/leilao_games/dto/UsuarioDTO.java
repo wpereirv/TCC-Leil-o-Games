@@ -7,6 +7,7 @@ public record UsuarioDTO(
         String nome,
         String email,
         String tipo,
+        Boolean ativo,
         Double mediaAvaliacoes,
         Integer quantidadeAvaliacoes
 ) {
@@ -18,6 +19,7 @@ public record UsuarioDTO(
                 usuario.getNome(),
                 usuario.getEmail(),
                 usuario.getTipo(),
+                usuario.getAtivo(),
                 usuario.getMediaAvaliacoes(),
                 usuario.getQuantidadeAvaliacoes()
         );

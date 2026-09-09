@@ -14,6 +14,7 @@ public record AdminProdutoDTO(
         LocalDateTime dataInicio,
         LocalDateTime dataFim,
         Boolean encerrado,
+        Boolean ativo,
         Integer quantidadeLances
 ) {
 
@@ -34,6 +35,7 @@ public record AdminProdutoDTO(
                 produto.getDataInicio(),
                 produto.getDataFim(),
                 produto.getEncerrado(),
+                produto.getAtivo(),
                 quantidadeLances
         );
     }

@@ -46,6 +46,12 @@ public class Produto {
 
     private Boolean encerrado = false;
 
+    @Column(
+        nullable = false,
+        columnDefinition = "TINYINT(1) DEFAULT 1")
+
+    private Boolean ativo = true;
+
     @Enumerated(EnumType.STRING)
     private StatusNegociacao statusNegociacao;
 
@@ -181,6 +187,14 @@ public class Produto {
 
     public void setEncerrado(Boolean encerrado) {
         this.encerrado = encerrado;
+    }
+
+        public Boolean getAtivo() {
+        return ativo;
+    }
+
+    public void setAtivo(Boolean ativo) {
+        this.ativo = ativo;
     }
 
     public StatusNegociacao getStatusNegociacao() {

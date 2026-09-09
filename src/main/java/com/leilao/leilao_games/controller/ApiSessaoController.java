@@ -318,6 +318,15 @@ public ResponseEntity<?> buscarResumo(
                     ));
         }
 
+        if (!Boolean.TRUE.equals(usuario.getAtivo())) {
+                return ResponseEntity
+                        .status(403)
+                        .body(Map.of(
+                                "erro",
+                                "Esta conta está desativada. Entre em contato com a administração."
+                        ));
+}
+
         request.changeSessionId();
 
         session.setAttribute(

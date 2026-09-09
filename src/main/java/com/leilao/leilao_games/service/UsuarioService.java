@@ -24,11 +24,39 @@ public class UsuarioService {
 
     public Usuario buscarPorId(Long id) {
 
-        return usuarioRepository
-                .findById(id)
-                .orElse(null);
+    Usuario usuario = buscarPorIdInclusoInativo(id);
 
+    if (usuario == null
+            || !Boolean.TRUE.equals(usuario.getAtivo())) {
+        return null;
     }
+
+    return usuario;
+}
+
+public Usuario buscarPorIdInclusoInativo(Long id) {
+
+    return usuarioRepository
+            .findById(id)
+            .orElse(null);
+}
+
+public Usuario atualizarStatus(
+        Long id,
+        boolean ativo) {
+
+    Usuario usuario = buscarPorIdInclusoInativo(id);
+
+    if (usuario == null) {
+        throw new IllegalArgumentException(
+                "Usuário não encontrado."
+        );
+    }
+
+    usuario.setAtivo(ativo);
+
+    return usuarioRepository.save(usuario);
+}
 
     public long contarUsuarios() {
         return usuarioRepository.count();

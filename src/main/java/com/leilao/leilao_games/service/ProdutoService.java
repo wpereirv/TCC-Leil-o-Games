@@ -2,11 +2,12 @@ package com.leilao.leilao_games.service;
 
 import com.leilao.leilao_games.model.Lance;
 import com.leilao.leilao_games.model.Produto;
+import com.leilao.leilao_games.model.StatusNegociacao;
 import com.leilao.leilao_games.repository.ProdutoRepository;
 
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.stereotype.Service;
-import com.leilao.leilao_games.model.StatusNegociacao;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
@@ -19,6 +20,7 @@ public class ProdutoService {
     private final ProdutoRepository produtoRepository;
     private final LanceService lanceService;
     private final NotificacaoService notificacaoService;
+
     public Produto salvar(Produto produto) {
         return produtoRepository.save(produto);
     }
@@ -27,68 +29,140 @@ public class ProdutoService {
         return produtoRepository.findAll();
     }
 
-   public Produto buscarPorId(Long id) {
+    public Produto buscarPorId(Long id) {
 
-    Produto produto = produtoRepository
-            .findById(id)
-            .orElse(null);
+        Produto produto = produtoRepository
+                .findById(id)
+                .orElse(null);
 
-    if (produto != null
-            && produto.getDataFim() != null
-            && LocalDateTime.now()
-                    .isAfter(produto.getDataFim())
-            && !Boolean.TRUE.equals(
-                    produto.getEncerrado())) {
+        if (produto == null
+                || !Boolean.TRUE.equals(produto.getAtivo())) {
+            return null;
+        }
 
-        produto.setEncerrado(true);
+        if (produto.getDataFim() != null
+                && LocalDateTime.now()
+                        .isAfter(produto.getDataFim())
+                && !Boolean.TRUE.equals(
+                        produto.getEncerrado())) {
 
-        Lance lanceVencedor =
-                lanceService.buscarLanceVencedor(id);
+            produto.setEncerrado(true);
 
-        if (lanceVencedor != null) {
+            Lance lanceVencedor =
+                    lanceService.buscarLanceVencedor(id);
 
-    produto.setComprador(
-            lanceVencedor.getUsuario()
-    );
+            if (lanceVencedor != null) {
 
-    produto.setValorFinal(
-            lanceVencedor.getValor()
-    );
+                produto.setComprador(
+                        lanceVencedor.getUsuario()
+                );
 
-    produto.setStatusNegociacao(
-            StatusNegociacao.AGUARDANDO_PAGAMENTO
-    );
-}
+                produto.setValorFinal(
+                        lanceVencedor.getValor()
+                );
 
-        produtoRepository.save(produto);
+                produto.setStatusNegociacao(
+                        StatusNegociacao.AGUARDANDO_PAGAMENTO
+                );
+            }
 
-        notificacaoService.criar(
-                produto.getUsuario(),
-                "LEILAO_ENCERRADO",
-                "Seu leilão do produto "
-                        + produto.getNome()
-                        + " foi encerrado.",
-                "/produto/" + produto.getId()
-        );
-
-        if (lanceVencedor != null) {
+            produtoRepository.save(produto);
 
             notificacaoService.criar(
-                    lanceVencedor.getUsuario(),
-                    "LEILAO_VENCIDO",
-                    "Parabéns! Você venceu o leilão do produto "
+                    produto.getUsuario(),
+                    "LEILAO_ENCERRADO",
+                    "Seu leilão do produto "
                             + produto.getNome()
-                            + ".",
+                            + " foi encerrado.",
                     "/produto/" + produto.getId()
             );
+
+            if (lanceVencedor != null) {
+
+                notificacaoService.criar(
+                        lanceVencedor.getUsuario(),
+                        "LEILAO_VENCIDO",
+                        "Parabéns! Você venceu o leilão do produto "
+                                + produto.getNome()
+                                + ".",
+                        "/produto/" + produto.getId()
+                );
+            }
         }
+
+        return produto;
     }
 
-    return produto;
-}
+    public Produto buscarPorIdInclusoInativo(Long id) {
+
+        return produtoRepository
+                .findById(id)
+                .orElse(null);
+    }
+
+    @Transactional
+    public Produto atualizarStatus(
+            Long id,
+            boolean ativo) {
+
+        Produto produto = buscarPorIdInclusoInativo(id);
+
+        if (produto == null) {
+            throw new IllegalArgumentException(
+                    "Leilão não encontrado."
+            );
+        }
+
+        if (ativo
+                && (Boolean.TRUE.equals(produto.getEncerrado())
+                || (produto.getDataFim() != null
+                && !produto.getDataFim()
+                        .isAfter(LocalDateTime.now())))) {
+
+            throw new IllegalStateException(
+                    "Não é possível reativar um leilão encerrado ou vencido."
+            );
+        }
+
+        produto.setAtivo(ativo);
+
+        return produtoRepository.save(produto);
+    }
+
+    @Transactional
+    public void desativarLeiloesAtivosDoUsuario(
+            Long usuarioId) {
+
+        List<Produto> produtos = produtoRepository
+                .findByUsuarioId(usuarioId)
+                .stream()
+                .filter(produto ->
+                        Boolean.TRUE.equals(produto.getAtivo())
+                        && !Boolean.TRUE.equals(
+                                produto.getEncerrado()
+                        ))
+                .toList();
+
+        produtos.forEach(produto ->
+                produto.setAtivo(false)
+        );
+
+        produtoRepository.saveAll(produtos);
+    }
+
+    private List<Produto> filtrarAtivos(
+            List<Produto> produtos) {
+
+        return produtos.stream()
+                .filter(produto ->
+                        Boolean.TRUE.equals(produto.getAtivo()))
+                .toList();
+    }
 
     public List<Produto> buscarPorCategoria(Long categoriaId) {
-        return produtoRepository.findByCategoriaId(categoriaId);
+        return filtrarAtivos(
+                produtoRepository.findByCategoriaId(categoriaId)
+        );
     }
 
     public long contarProdutos() {
@@ -108,7 +182,10 @@ public class ProdutoService {
     }
 
     public List<Produto> pesquisarPorNome(String nome) {
-        return produtoRepository.findByNomeContainingIgnoreCase(nome);
+        return filtrarAtivos(
+                produtoRepository
+                        .findByNomeContainingIgnoreCase(nome)
+        );
     }
 
     public List<Produto> buscarPorUsuario(Long usuarioId) {
@@ -116,7 +193,9 @@ public class ProdutoService {
     }
 
     public List<Produto> listarAtivos() {
-        return produtoRepository.findByEncerradoFalse();
+        return filtrarAtivos(
+                produtoRepository.findByEncerradoFalse()
+        );
     }
 
     public List<Produto> listarEncerrados() {
@@ -126,259 +205,269 @@ public class ProdutoService {
     public List<Produto> listarOrdenados(String ordem) {
 
         if (ordem == null || ordem.isBlank()) {
-            return produtoRepository.findByEncerradoFalseOrderByIdDesc();
+            return filtrarAtivos(
+                    produtoRepository
+                            .findByEncerradoFalseOrderByIdDesc()
+            );
         }
 
         switch (ordem) {
 
             case "menorPreco":
-                return produtoRepository.findByEncerradoFalseOrderByValorInicialAsc();
+                return filtrarAtivos(
+                        produtoRepository
+                                .findByEncerradoFalseOrderByValorInicialAsc()
+                );
 
             case "maiorPreco":
-                return produtoRepository.findByEncerradoFalseOrderByValorInicialDesc();
+                return filtrarAtivos(
+                        produtoRepository
+                                .findByEncerradoFalseOrderByValorInicialDesc()
+                );
 
             case "terminando":
-                return produtoRepository.findByEncerradoFalseOrderByDataFimAsc();
+                return filtrarAtivos(
+                        produtoRepository
+                                .findByEncerradoFalseOrderByDataFimAsc()
+                );
 
             default:
-                return produtoRepository.findByEncerradoFalseOrderByIdDesc();
+                return filtrarAtivos(
+                        produtoRepository
+                                .findByEncerradoFalseOrderByIdDesc()
+                );
         }
     }
 
     public void verificarLeiloesEncerrados() {
 
-    List<Produto> produtosVencidos =
-            produtoRepository
-                    .findByEncerradoFalseAndDataFimBefore(
-                            LocalDateTime.now()
-                    );
+        List<Produto> produtosVencidos =
+                produtoRepository
+                        .findByEncerradoFalseAndDataFimBefore(
+                                LocalDateTime.now()
+                        );
 
-    for (Produto produto : produtosVencidos) {
-        buscarPorId(produto.getId());
-    }
+        for (Produto produto : produtosVencidos) {
+            buscarPorId(produto.getId());
+        }
     }
 
     public long contarProdutosAtivos() {
+        return listarAtivos().size();
+    }
 
-    return produtoRepository
-            .countByEncerradoFalse();
-}
-
-public long contarProdutosEncerrados() {
-
-    return produtoRepository
-            .countByEncerradoTrue();
+    public long contarProdutosEncerrados() {
+        return produtoRepository.countByEncerradoTrue();
     }
 
     public enum ResultadoNegociacao {
-    SUCESSO,
-    NAO_ENCONTRADA,
-    NAO_AUTORIZADO,
-    STATUS_INVALIDO,
-    CODIGO_INVALIDO
+        SUCESSO,
+        NAO_ENCONTRADA,
+        NAO_AUTORIZADO,
+        STATUS_INVALIDO,
+        CODIGO_INVALIDO
     }
 
     @Transactional
-public List<Produto> buscarNegociacoes(
-        Long usuarioId) {
+    public List<Produto> buscarNegociacoes(
+            Long usuarioId) {
 
-    List<Produto> encerrados =
-            produtoRepository.findByEncerradoTrue();
+        List<Produto> encerrados =
+                produtoRepository.findByEncerradoTrue();
 
-    for (Produto produto : encerrados) {
+        for (Produto produto : encerrados) {
 
-        if (produto.getStatusNegociacao() != null) {
-            continue;
+            if (produto.getStatusNegociacao() != null) {
+                continue;
+            }
+
+            Lance lanceVencedor =
+                    lanceService.buscarLanceVencedor(
+                            produto.getId()
+                    );
+
+            if (lanceVencedor == null) {
+                continue;
+            }
+
+            produto.setComprador(
+                    lanceVencedor.getUsuario()
+            );
+
+            produto.setValorFinal(
+                    lanceVencedor.getValor()
+            );
+
+            produto.setStatusNegociacao(
+                    StatusNegociacao.AGUARDANDO_PAGAMENTO
+            );
+
+            produtoRepository.save(produto);
         }
 
-        Lance lanceVencedor =
-                lanceService.buscarLanceVencedor(
-                        produto.getId()
-                );
+        return produtoRepository
+                .buscarNegociacoesDoUsuario(usuarioId);
+    }
 
-        if (lanceVencedor == null) {
-            continue;
+    @Transactional
+    public ResultadoNegociacao confirmarPagamento(
+            Long produtoId,
+            Long usuarioId) {
+
+        Produto produto =
+                produtoRepository
+                        .buscarPorIdComBloqueio(produtoId)
+                        .orElse(null);
+
+        if (produto == null) {
+            return ResultadoNegociacao.NAO_ENCONTRADA;
         }
 
-        produto.setComprador(
-                lanceVencedor.getUsuario()
-        );
+        if (produto.getComprador() == null
+                || !produto.getComprador()
+                        .getId()
+                        .equals(usuarioId)) {
 
-        produto.setValorFinal(
-                lanceVencedor.getValor()
-        );
+            return ResultadoNegociacao.NAO_AUTORIZADO;
+        }
+
+        if (produto.getStatusNegociacao()
+                != StatusNegociacao.AGUARDANDO_PAGAMENTO) {
+
+            return ResultadoNegociacao.STATUS_INVALIDO;
+        }
 
         produto.setStatusNegociacao(
-                StatusNegociacao.AGUARDANDO_PAGAMENTO
+                StatusNegociacao.AGUARDANDO_ENVIO
+        );
+
+        produto.setDataPagamento(
+                LocalDateTime.now()
         );
 
         produtoRepository.save(produto);
+
+        notificacaoService.criar(
+                produto.getUsuario(),
+                "NEGOCIACAO",
+                "O pagamento do produto "
+                        + produto.getNome()
+                        + " foi confirmado.",
+                "/negociacoes"
+        );
+
+        return ResultadoNegociacao.SUCESSO;
     }
 
-    return produtoRepository
-            .buscarNegociacoesDoUsuario(usuarioId);
-}
+    @Transactional
+    public ResultadoNegociacao informarEnvio(
+            Long produtoId,
+            Long usuarioId,
+            String codigoRastreio) {
 
-@Transactional
-public ResultadoNegociacao confirmarPagamento(
-        Long produtoId,
-        Long usuarioId) {
+        Produto produto =
+                produtoRepository
+                        .buscarPorIdComBloqueio(produtoId)
+                        .orElse(null);
 
-    Produto produto =
-            produtoRepository
-                    .buscarPorIdComBloqueio(produtoId)
-                    .orElse(null);
+        if (produto == null) {
+            return ResultadoNegociacao.NAO_ENCONTRADA;
+        }
 
-    if (produto == null) {
-        return ResultadoNegociacao.NAO_ENCONTRADA;
+        if (produto.getUsuario() == null
+                || !produto.getUsuario()
+                        .getId()
+                        .equals(usuarioId)) {
+
+            return ResultadoNegociacao.NAO_AUTORIZADO;
+        }
+
+        if (produto.getStatusNegociacao()
+                != StatusNegociacao.AGUARDANDO_ENVIO) {
+
+            return ResultadoNegociacao.STATUS_INVALIDO;
+        }
+
+        if (codigoRastreio == null
+                || codigoRastreio.isBlank()
+                || codigoRastreio.length() > 100) {
+
+            return ResultadoNegociacao.CODIGO_INVALIDO;
+        }
+
+        produto.setCodigoRastreio(
+                codigoRastreio.trim()
+        );
+
+        produto.setDataEnvio(
+                LocalDateTime.now()
+        );
+
+        produto.setStatusNegociacao(
+                StatusNegociacao.EM_TRANSPORTE
+        );
+
+        produtoRepository.save(produto);
+
+        notificacaoService.criar(
+                produto.getComprador(),
+                "NEGOCIACAO",
+                "O produto "
+                        + produto.getNome()
+                        + " foi enviado.",
+                "/negociacoes"
+        );
+
+        return ResultadoNegociacao.SUCESSO;
     }
 
-    if (produto.getComprador() == null
-            || !produto.getComprador()
-                    .getId()
-                    .equals(usuarioId)) {
+    @Transactional
+    public ResultadoNegociacao confirmarRecebimento(
+            Long produtoId,
+            Long usuarioId) {
 
-        return ResultadoNegociacao.NAO_AUTORIZADO;
+        Produto produto =
+                produtoRepository
+                        .buscarPorIdComBloqueio(produtoId)
+                        .orElse(null);
+
+        if (produto == null) {
+            return ResultadoNegociacao.NAO_ENCONTRADA;
+        }
+
+        if (produto.getComprador() == null
+                || !produto.getComprador()
+                        .getId()
+                        .equals(usuarioId)) {
+
+            return ResultadoNegociacao.NAO_AUTORIZADO;
+        }
+
+        if (produto.getStatusNegociacao()
+                != StatusNegociacao.EM_TRANSPORTE) {
+
+            return ResultadoNegociacao.STATUS_INVALIDO;
+        }
+
+        produto.setStatusNegociacao(
+                StatusNegociacao.CONCLUIDA
+        );
+
+        produto.setDataConclusao(
+                LocalDateTime.now()
+        );
+
+        produtoRepository.save(produto);
+
+        notificacaoService.criar(
+                produto.getUsuario(),
+                "NEGOCIACAO",
+                "A entrega do produto "
+                        + produto.getNome()
+                        + " foi confirmada.",
+                "/negociacoes"
+        );
+
+        return ResultadoNegociacao.SUCESSO;
     }
-
-    if (produto.getStatusNegociacao()
-            != StatusNegociacao.AGUARDANDO_PAGAMENTO) {
-
-        return ResultadoNegociacao.STATUS_INVALIDO;
-    }
-
-    produto.setStatusNegociacao(
-            StatusNegociacao.AGUARDANDO_ENVIO
-    );
-
-    produto.setDataPagamento(
-            LocalDateTime.now()
-    );
-
-    produtoRepository.save(produto);
-
-    notificacaoService.criar(
-            produto.getUsuario(),
-            "NEGOCIACAO",
-            "O pagamento do produto "
-                    + produto.getNome()
-                    + " foi confirmado.",
-            "/negociacoes"
-    );
-
-    return ResultadoNegociacao.SUCESSO;
-}
-
-@Transactional
-public ResultadoNegociacao informarEnvio(
-        Long produtoId,
-        Long usuarioId,
-        String codigoRastreio) {
-
-    Produto produto =
-            produtoRepository
-                    .buscarPorIdComBloqueio(produtoId)
-                    .orElse(null);
-
-    if (produto == null) {
-        return ResultadoNegociacao.NAO_ENCONTRADA;
-    }
-
-    if (produto.getUsuario() == null
-            || !produto.getUsuario()
-                    .getId()
-                    .equals(usuarioId)) {
-
-        return ResultadoNegociacao.NAO_AUTORIZADO;
-    }
-
-    if (produto.getStatusNegociacao()
-            != StatusNegociacao.AGUARDANDO_ENVIO) {
-
-        return ResultadoNegociacao.STATUS_INVALIDO;
-    }
-
-    if (codigoRastreio == null
-            || codigoRastreio.isBlank()
-            || codigoRastreio.length() > 100) {
-
-        return ResultadoNegociacao.CODIGO_INVALIDO;
-    }
-
-    produto.setCodigoRastreio(
-            codigoRastreio.trim()
-    );
-
-    produto.setDataEnvio(
-            LocalDateTime.now()
-    );
-
-    produto.setStatusNegociacao(
-            StatusNegociacao.EM_TRANSPORTE
-    );
-
-    produtoRepository.save(produto);
-
-    notificacaoService.criar(
-            produto.getComprador(),
-            "NEGOCIACAO",
-            "O produto "
-                    + produto.getNome()
-                    + " foi enviado.",
-            "/negociacoes"
-    );
-
-    return ResultadoNegociacao.SUCESSO;
-}
-
-@Transactional
-public ResultadoNegociacao confirmarRecebimento(
-        Long produtoId,
-        Long usuarioId) {
-
-    Produto produto =
-            produtoRepository
-                    .buscarPorIdComBloqueio(produtoId)
-                    .orElse(null);
-
-    if (produto == null) {
-        return ResultadoNegociacao.NAO_ENCONTRADA;
-    }
-
-    if (produto.getComprador() == null
-            || !produto.getComprador()
-                    .getId()
-                    .equals(usuarioId)) {
-
-        return ResultadoNegociacao.NAO_AUTORIZADO;
-    }
-
-    if (produto.getStatusNegociacao()
-            != StatusNegociacao.EM_TRANSPORTE) {
-
-        return ResultadoNegociacao.STATUS_INVALIDO;
-    }
-
-    produto.setStatusNegociacao(
-            StatusNegociacao.CONCLUIDA
-    );
-
-    produto.setDataConclusao(
-            LocalDateTime.now()
-    );
-
-    produtoRepository.save(produto);
-
-    notificacaoService.criar(
-            produto.getUsuario(),
-            "NEGOCIACAO",
-            "A entrega do produto "
-                    + produto.getNome()
-                    + " foi confirmada.",
-            "/negociacoes"
-    );
-
-    return ResultadoNegociacao.SUCESSO;
-}
-
 }

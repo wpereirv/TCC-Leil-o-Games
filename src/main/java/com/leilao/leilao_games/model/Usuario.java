@@ -38,6 +38,12 @@ public class Usuario {
     @Column(nullable = false, length = 20)
     private String tipo;
 
+    @Column(
+        nullable = false,
+        columnDefinition = "TINYINT(1) DEFAULT 1")
+
+    private Boolean ativo = true;
+
     private Double mediaAvaliacoes = 0.0;
 
     private Integer quantidadeAvaliacoes = 0;
@@ -80,6 +86,14 @@ public class Usuario {
 
     public void setTipo(String tipo) {
         this.tipo = tipo;
+    }
+
+        public Boolean getAtivo() {
+        return ativo;
+    }
+
+    public void setAtivo(Boolean ativo) {
+        this.ativo = ativo;
     }
 
     public Double getMediaAvaliacoes() {

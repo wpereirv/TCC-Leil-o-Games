@@ -1,5 +1,6 @@
 package com.leilao.leilao_games.service;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -28,10 +29,17 @@ public class ImagemService {
                     "image/png"
             );
 
-    private final Path diretorioUploads =
-            Paths.get("src/main/resources/static/uploads")
-                    .toAbsolutePath()
-                    .normalize();
+    private final Path diretorioUploads;
+
+    public ImagemService(
+            @Value("${app.upload.dir:uploads}")
+            String uploadDir) {
+
+        this.diretorioUploads =
+                Paths.get(uploadDir)
+                        .toAbsolutePath()
+                        .normalize();
+    }
 
     public void validar(MultipartFile arquivo)
             throws IOException {
@@ -112,24 +120,23 @@ public class ImagemService {
     }
 
     public void remover(String nomeArquivo)
-        throws IOException {
+            throws IOException {
 
-    if (nomeArquivo == null
-            || nomeArquivo.isBlank()) {
+        if (nomeArquivo == null
+                || nomeArquivo.isBlank()) {
 
-        return;
+            return;
+        }
+
+        Path arquivo =
+                diretorioUploads
+                        .resolve(nomeArquivo)
+                        .normalize();
+
+        if (!arquivo.startsWith(diretorioUploads)) {
+            throw new IllegalArgumentException();
+        }
+
+        Files.deleteIfExists(arquivo);
     }
-
-    Path arquivo =
-            diretorioUploads
-                    .resolve(nomeArquivo)
-                    .normalize();
-
-    if (!arquivo.startsWith(diretorioUploads)) {
-        throw new IllegalArgumentException();
-    }
-
-    Files.deleteIfExists(arquivo);
-    }
-
 }
